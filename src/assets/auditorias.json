@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "titulo": "Queda de Árvore",
+    "tipo": "Infraestrutura",
+    "data": "2024-02-24T15:45:00",
+    "local": "Braga"
+  },
+  {
+    "id": 2,
+    "titulo": "Desabamento de Muro",
+    "tipo": "Infraestrutura",
+    "data": "2024-03-10T17:00:00",
+    "local": "Guimarães"
+  }
+]

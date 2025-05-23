@@ -1,0 +1,41 @@
+[
+  {
+    "id": 101,
+    "titulo": "Inspeção de Passadeira",
+    "tipo": "Segurança Rodoviária",
+    "data": "2025-05-10T23:06:41.769137",
+    "local": "Rua de São Lázaro, Braga",
+    "descricao": "Verificação da visibilidade da passadeira e necessidade de repintura.",
+    "documentos": "Relatório_2024_Passadeira.pdf",
+    "prioridade": "Média",
+    "especialistas": "João Silva, Marta Lopes",
+    "materiais": "Tinta, Sinalização Temporária",
+    "origem": "Reclamação Cidadão"
+  },
+  {
+    "id": 102,
+    "titulo": "Verificação de Iluminação Pública",
+    "tipo": "Infraestrutura Urbana",
+    "data": "2025-05-13T23:06:41.769153",
+    "local": "Avenida Central, Guimarães",
+    "descricao": "Auditoria para validar reparações após apagões constantes.",
+    "documentos": "CheckList_Luzes_Avenida.pdf",
+    "prioridade": "Alta",
+    "especialistas": "Ana Costa",
+    "materiais": "Equipamentos de Medição de Tensão",
+    "origem": "Pedido da Câmara Municipal"
+  },
+  {
+    "id": 103,
+    "titulo": "Inspeção de Abrigo de Paragem",
+    "tipo": "Mobilidade Urbana",
+    "data": "2025-05-16T23:06:41.769156",
+    "local": "Praça Conde de Agrolongo, Braga",
+    "descricao": "Verificação do estado estrutural do abrigo após vandalismo.",
+    "documentos": "Fotos_Danos_Abrigo.pdf",
+    "prioridade": "Baixa",
+    "especialistas": "Pedro Mendes",
+    "materiais": "Câmara fotográfica, Relatório Técnico",
+    "origem": "Vigilância Municipal"
+  }
+]
