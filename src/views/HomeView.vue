@@ -175,7 +175,7 @@ export default {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    border: 3px solid #fff;
+    border: 3px solid #277AFF;
     object-fit: cover;
 }
 
