@@ -1,380 +1,605 @@
 <template>
-    <div class="home-bg">
+  <div class="login-bg" :class="{ 'light-mode': !darkMode }">
+    <!-- Toggle de tema no canto superior direito -->
+    <button class="theme-toggle" @click="toggleTheme">
+      <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+    </button>
 
-        <div class="main-content">
-            <!-- Perfil -->
-            <div class="profile-header">
-                <div class="user-info">
-                    <p class="user-name">{{ user.name }}</p>
-                </div>
-                <img :src="`../assets/${user.avatar}`" alt="User" class="profile-pic" />
+    <div class="home-container">
+      <!-- Header elegante -->
+      <div class="home-header">
+        <div class="user-welcome">
+          <div class="avatar-container">
+            <div class="avatar-ring">
+              <img :src="`../assets/${user.avatar}`" :alt="user.name" class="avatar" />
             </div>
+          </div>
+          <div class="welcome-content">
+            <h2 class="welcome-text">Olá, {{ user.name }}</h2>
+            <p class="subtitle">{{ currentDate }}</p>
+          </div>
+        </div>
+      </div>
 
-            <!-- Notificações -->
-            <div :class="['notificacoes-iphone', { aberta: notificacoesAbertas }]">
-                <template v-if="!notificacoesAbertas">
-                    <!-- Só a notificação do topo visível -->
-                    <div v-if="auditoriasNovas.length > 0" class="notification-iphone notification-top"
-                        :class="{ focused: focusedNotifId === auditoriasNovas[0].id }"
-                        @click="handleNotificationClick(auditoriasNovas[0].id)" tabindex="0">
-                        <i class="fas fa-bell"></i>
-                        <span class="notif-text">Nova Auditoria: {{ auditoriasNovas[0].titulo }}</span>
-                    </div>
-                    <div v-if="auditoriasNovas.length > 1" class="notification-iphone notification-behind"
-                        style="pointer-events: none;"></div>
-                    <div v-if="auditoriasNovas.length === 0" class="no-notif">Sem notificações novas.</div>
-                </template>
-                <template v-else>
-                    <!-- Mostra todas as notificações com animação -->
-                    <transition-group name="notificacao-fade" tag="div">
-                        <div v-for="(aud, idx) in auditoriasNovas" :key="aud.id" class="notification-iphone"
-                            :class="{ focused: focusedNotifId === aud.id }" @click="handleNotificationClick(aud.id)"
-                            tabindex="0">
-                            <i class="fas fa-bell"></i>
-                            <span class="notif-text">Nova Auditoria: {{ aud.titulo }}</span>
-                        </div>
-                    </transition-group>
-                    <div v-if="auditoriasNovas.length === 0" class="no-notif">Sem notificações novas.</div>
-                </template>
-            </div>
+      <!-- Stats com design do login -->
+      <div class="stats-container">
+        <div class="stat-card" :class="{ 'active-stat': totalAuditorias > 0 }">
+          <div class="stat-number">{{ totalAuditorias }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card" :class="{ 'active-stat': auditoriasADecorrerCount > 0 }">
+          <div class="stat-number">{{ auditoriasADecorrerCount }}</div>
+          <div class="stat-label">Ativas</div>
+        </div>
+        <div class="stat-card" :class="{ 'active-stat': auditoriasConcluidasCount > 0 }">
+          <div class="stat-number">{{ auditoriasConcluidasCount }}</div>
+          <div class="stat-label">Concluídas</div>
+        </div>
+      </div>
 
-            <!-- Auditorias -->
-            <p class="section-title">Auditorias</p>
-            <div class="auditorias-grid">
-                <button class="card-btn" @click="$router.push('/auditorias/adecorrer')">
-                    <i class="fas fa-file-alt icon-above"></i>
-                    A decorrer
-                </button>
-                <button class="card-btn" @click="$router.push('/auditorias/concluidas')">
-                    <i class="fas fa-check icon-above"></i>
-                    Concluídas
-                </button>
-                <button class="card-btn" @click="$router.push('/auditorias/nova')">
-                    <i class="fas fa-plus icon-above"></i>
-                    Novas
-                </button>
-                <button class="card-btn" @click="$router.push('/especialistas')">
-                    <i class="fas fa-user-cog icon-above"></i>
-                    Gerir Especialista
-                </button>
-
-            </div>
+      <!-- Menu principal -->
+      <div class="menu-container">
+        <div class="menu-item" @click="$router.push('/auditorias/adecorrer')">
+          <div class="menu-icon blue-icon">
+            <i class="fas fa-play"></i>
+          </div>
+          <div class="menu-content">
+            <h3>Auditorias Ativas</h3>
+            <p>{{ auditoriasADecorrerCount }} em progresso</p>
+          </div>
+          <i class="fas fa-chevron-right menu-arrow"></i>
         </div>
 
-        <!-- Barra de navegação inferior -->
-        <NavBar />
+        <div class="menu-item" @click="$router.push('/auditorias/nova')">
+          <div class="menu-icon orange-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="menu-content">
+            <h3>Novas Auditorias</h3>
+            <p>{{ auditoriasNovas.length }} para revisar</p>
+          </div>
+          <i class="fas fa-chevron-right menu-arrow"></i>
+        </div>
 
+        <div class="menu-item" @click="$router.push('/auditorias/concluidas')">
+          <div class="menu-icon green-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="menu-content">
+            <h3>Concluídas</h3>
+            <p>{{ auditoriasConcluidasCount }} finalizadas</p>
+          </div>
+          <i class="fas fa-chevron-right menu-arrow"></i>
+        </div>
+
+        <div class="menu-item" @click="$router.push('/especialistas')">
+          <div class="menu-icon purple-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="menu-content">
+            <h3>Especialistas</h3>
+            <p>{{ especialistasCount }} na equipa</p>
+          </div>
+          <i class="fas fa-chevron-right menu-arrow"></i>
+        </div>
+      </div>
+
+      <!-- Notificações recentes -->
+      <div v-if="auditoriasNovas.length > 0" class="notifications-container">
+        <h3 class="section-title">Recentes</h3>
+        <div class="notification-list">
+          <div 
+            v-for="auditoria in auditoriasNovas.slice(0, 2)" 
+            :key="auditoria.id"
+            class="notification-item"
+            @click="$router.push(`/auditoriasnovas/${auditoria.id}`)"
+          >
+            <div class="notification-dot"></div>
+            <div class="notification-content">
+              <h4>{{ auditoria.titulo }}</h4>
+              <p>Nova auditoria criada</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Bottom Navigation Component -->
+    <BottomNav />
+  </div>
 </template>
 
 <script>
-import NavBar from '../components/NavBar.vue'
+import BottomNav from '../components/BottomNav.vue'
 
 export default {
-    name: 'HomeView',
-    components: {
-        NavBar
-    },
-    data() {
-        return {
-            user: { name: '', avatar: '' },
-            auditoriasNovas: [],
-            notificacoesAbertas: false,
-            focusedNotifId: null
-        }
-    },
-    mounted() {
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-            this.user = JSON.parse(savedUser);
-        }
-
-        const auditoriasNovas = localStorage.getItem('auditoriasNovas');
-        if (auditoriasNovas) {
-            this.auditoriasNovas = JSON.parse(auditoriasNovas);
-        }
-
-        // DEBUG
-        console.log("Auditorias Novas:", this.auditoriasNovas);
-    },
-
-
-    methods: {
-        handleNotificationClick(id) {
-            if (!this.notificacoesAbertas) {
-
-                this.notificacoesAbertas = true;
-
-                setTimeout(() => {
-                    this.notificacoesAbertas = false;
-                    this.focusedNotifId = null;
-                }, 8000);
-            } else if (this.focusedNotifId === id) {
-
-                this.irParaDetalhe(id);
-            } else {
-
-                this.focusedNotifId = id;
-                setTimeout(() => {
-                    if (this.focusedNotifId === id) this.focusedNotifId = null;
-                }, 2000);
-            }
-        },
-        irParaDetalhe(id) {
-            this.focusedNotifId = null;
-            this.notificacoesAbertas = false;
-            this.$router.push(`/auditoriasnovas/${id}`);
-        }
+  name: 'CleanHomeView',
+  components: {
+    BottomNav
+  },
+  data() {
+    return {
+      user: { name: '', avatar: '' },
+      auditoriasNovas: [],
+      auditorias: [],
+      auditoriasConcluidas: [],
+      especialistas: [],
+      darkMode: true
     }
+  },
+  computed: {
+    currentDate() {
+      return new Date().toLocaleDateString('pt-PT', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+      })
+    },
+    auditoriasADecorrerCount() {
+      return this.auditorias.length
+    },
+    auditoriasConcluidasCount() {
+      return this.auditoriasConcluidas.length
+    },
+    especialistasCount() {
+      return this.especialistas.length
+    },
+    totalAuditorias() {
+      return this.auditoriasNovas.length + this.auditorias.length + this.auditoriasConcluidas.length
+    }
+  },
+  mounted() {
+    this.loadData()
+    this.loadTheme()
+  },
+  methods: {
+    loadData() {
+      const savedUser = localStorage.getItem('user')
+      if (savedUser) {
+        this.user = JSON.parse(savedUser)
+      }
 
+      const auditoriasNovas = localStorage.getItem('auditoriasNovas')
+      if (auditoriasNovas) {
+        this.auditoriasNovas = JSON.parse(auditoriasNovas)
+      }
 
+      const auditorias = localStorage.getItem('auditorias')
+      if (auditorias) {
+        this.auditorias = JSON.parse(auditorias)
+      }
 
+      const auditoriasConcluidas = localStorage.getItem('auditoriasConcluidas')
+      if (auditoriasConcluidas) {
+        this.auditoriasConcluidas = JSON.parse(auditoriasConcluidas)
+      }
+
+      const especialistas = localStorage.getItem('especialistas')
+      if (especialistas) {
+        this.especialistas = JSON.parse(especialistas)
+      }
+    },
+    
+    loadTheme() {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme) {
+        this.darkMode = savedTheme === 'dark'
+      }
+    },
+    
+    toggleTheme() {
+      this.darkMode = !this.darkMode
+      localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
+    }
+  }
 }
 </script>
 
-
-
 <style scoped>
-.home-bg {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    padding: 48px 20px 90px 20px;
-    background: transparent;
-    overflow: hidden;
-    min-width: 0;
-    min-height: 0;
+/* Variáveis CSS para temas - IGUAIS AO LOGIN */
+:root {
+  --bg-primary: #0a0f1a;
+  --bg-secondary: #132340;
+  --text-primary: #ffffff;
+  --text-secondary: #aad1ff;
+  --accent-primary: #277AFF;
+  --accent-secondary: #00aaff;
+  --input-bg: #dce4f7;
+  --input-text: #333;
 }
 
-.main-content {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    justify-content: flex-start;
-    padding-top: 8px;
+.light-mode {
+  --bg-primary: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-secondary: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --accent-primary: #277AFF;
+  --accent-secondary: #00aaff;
+  --input-bg: #f8f9fa;
+  --input-text: #333;
 }
 
-.profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* Background principal - IGUAL AO LOGIN */
+.login-bg {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: all 0.5s ease;
+  padding: 10px 10px 80px 10px; /* Adicionar padding-bottom para navbar */
 }
 
-.user-name {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
+.login-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(39, 122, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 170, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-.profile-pic {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    border: 3px solid #277AFF;
-    object-fit: cover;
+/* Toggle de tema - IGUAL AO LOGIN */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Container principal - remover padding-bottom e navbar */
+.home-container {
+  background: var(--bg-secondary);
+  padding: 24px 20px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.5s ease;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Header */
+.home-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.user-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Avatar com anel animado - IGUAL AO LOGIN */
+.avatar-container {
+  margin-bottom: 8px;
+}
+
+.avatar-ring {
+  position: relative;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--bg-secondary);
+  background-color: #ccc;
+  transition: transform 0.3s ease;
+  object-fit: cover;
+}
+
+.avatar-ring:hover .avatar {
+  transform: scale(1.05);
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.welcome-text {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Stats Container */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card.active-stat {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 122, 255, 0.3);
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+  line-height: 1;
+}
+
+.stat-card.active-stat .stat-number {
+  color: white;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.stat-card.active-stat .stat-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Menu Container */
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.menu-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.menu-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.blue-icon {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.green-icon {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.orange-icon {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+}
+
+.purple-icon {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.menu-content {
+  flex: 1;
+}
+
+.menu-content h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.menu-content p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.menu-arrow {
+  color: var(--text-secondary);
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* Notificações */
+.notifications-container {
+  margin-bottom: 8px;
 }
 
 .section-title {
-    font-weight: 600;
-    font-size: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-primary);
+}
+
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.notification-content h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.notification-content p {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .login-bg {
+    padding: 5px 5px 80px 5px;
+  }
+
+  .home-container {
     margin: 0;
-}
-
-/* === Notificações iPhone === */
-.notificacoes-iphone {
-    position: relative;
-    width: 100%;
-    margin-bottom: 28px;
-    z-index: 1;
-    /* Por defeito: modo fechado (stack) */
-    min-height: 56px;
-    max-height: 76px;
-    overflow: visible;
-}
-
-.notificacoes-iphone.aberta {
-    /* Quando está aberta, permite crescer! */
-    min-height: unset;
-    max-height: unset;
-    overflow: visible;
-    margin-bottom: 36px;
-    position: relative;
-    z-index: 1;
-    padding-bottom: 6px;
-    /* espaço extra para separar das auditorias */
-}
-
-/* Notificação empilhada (stack: só 1ª + "borda" de trás) */
-.notificacoes-iphone:not(.aberta) .notification-iphone.notification-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-    margin: 0;
-}
-
-.notificacoes-iphone:not(.aberta) .notification-iphone.notification-behind {
-    position: absolute;
-    top: 32px;
-    left: 18px;
-    right: 18px;
-    z-index: 1;
-    background: #185cc6;
-    opacity: 0.55;
-    height: 22px;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 4px 10px 0px #277aff44;
-    pointer-events: none;
-    margin: 0;
-}
-
-/* Notificações em modo aberto (todas visíveis, espaçadas) */
-.notificacoes-iphone.aberta .notification-iphone {
-    position: relative !important;
-    margin-bottom: 14px;
-    z-index: 2;
-}
-
-.notificacoes-iphone.aberta .notification-iphone:last-child {
-    margin-bottom: 0;
-}
-
-/* Notificação visual */
-.notification-iphone {
-    background-color: #277aff;
-    padding: 14px 18px;
+    padding: 20px 16px;
     border-radius: 16px;
-    font-size: 15px;
-    font-weight: 500;
-    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.18);
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
-    transition:
-        transform 0.16s cubic-bezier(.23, 1.01, .32, 1),
-        box-shadow 0.15s,
-        background-color 0.13s,
-        outline 0.14s;
-    margin-bottom: 0;
-    position: relative;
-    z-index: 2;
-}
+    max-width: 100%;
+  }
 
-.notification-iphone.focused,
-.notification-iphone:active {
-    background: #185cc6;
-    box-shadow: 0 16px 40px -2px #277aff, 0 2px 12px rgba(0, 0, 0, 0.25);
-    outline: 2px solid #aad1ff;
-    transform: scale(1.045);
-    z-index: 9;
-}
-
-.notif-text {
-    flex: 1;
-    white-space: pre-line;
-}
-
-.no-notif {
-    color: #fff;
-    opacity: 0.5;
-    text-align: center;
-    padding: 12px 0;
-}
-
-.notificacao-fade-enter-active,
-.notificacao-fade-leave-active {
-    transition: all 0.44s cubic-bezier(.23, 1.01, .32, 1);
-}
-
-.notificacao-fade-enter-from,
-.notificacao-fade-leave-to {
-    opacity: 0;
-    transform: translateY(-24px) scale(0.96);
-}
-
-.notificacao-fade-enter-to,
-.notificacao-fade-leave-from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-
-/* --- RESTANTE CSS (layout e cards) --- */
-.auditorias-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.card-btn {
-    background-color: #1c2e4a;
-    color: white;
-    border: none;
-    padding: 18px 12px 12px;
-    border-radius: 12px;
-    text-align: center;
-    font-weight: 500;
+  .theme-toggle {
+    width: 35px;
+    height: 35px;
+    top: 10px;
+    right: 10px;
     font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s ease;
-}
+  }
 
-.card-btn:hover {
-    background-color: #22395a;
-}
+  .avatar {
+    width: 50px;
+    height: 50px;
+  }
 
-.icon-above {
+  .welcome-text {
+    font-size: 16px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .stat-card {
+    padding: 14px 10px;
+  }
+
+  .stat-number {
     font-size: 20px;
-}
+  }
 
-.nav-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #132340;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 12px 0;
-    border-top: 1px solid #1c2e4a;
-    z-index: 10;
-    height: 64px;
-}
-
-.nav-icon {
-    font-size: 20px;
-    color: #bbb;
-    width: 20%;
-    text-align: center;
-}
-
-.nav-circle {
-    background-color: #277aff;
-    border-radius: 50%;
+  .menu-item {
     padding: 14px;
-    color: white;
-    margin-top: -36px;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    z-index: 11;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 56px;
-    height: 56px;
+  }
+
+  .menu-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+}
+
+/* Animação de entrada */
+.home-container {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

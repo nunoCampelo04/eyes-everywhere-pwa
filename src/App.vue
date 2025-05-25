@@ -141,13 +141,23 @@ export default {
         {
           id: 1,
           nome: "João Silva",
+          email: "joao.silva@especialista.com",
+          password: "123456",
+          telefone: "912345678",
+          morada: "Rua das Flores, 123, Braga",
+          dataNascimento: "1985-03-15",
           especialidade: "Infraestruturas",
           localidade: "Braga",
-          imagem: "joao.jpg"
+          avatar: "joao.jpg"
         },
         {
           id: 2,
           nome: "Marta Lopes",
+          email: "marta.lopes@especialista.com",
+          password: "123456",
+          telefone: "923456789",
+          morada: "Avenida Central, 456, Guimarães",
+          dataNascimento: "1990-07-22",
           especialidade: "Segurança Rodoviária",
           localidade: "Guimarães",
           imagem: "marta.jpg"
@@ -155,6 +165,11 @@ export default {
         {
           id: 3,
           nome: "Ana Costa",
+          email: "ana.costa@especialista.com",
+          password: "123456",
+          telefone: "934567890",
+          morada: "Praça da República, 789, Porto",
+          dataNascimento: "1988-11-08",
           especialidade: "Iluminação Pública",
           localidade: "Porto",
           imagem: "ana.jpg"
@@ -190,7 +205,7 @@ export default {
 
 <style>
 .app-wrapper {
-  height: 100dvh;       
+  height: 100dvh;
   min-height: 100dvh;
   width: 100vw;
   display: flex;
@@ -202,6 +217,7 @@ export default {
 
   overflow: hidden;
 }
+
 html,
 body {
   margin: 0;

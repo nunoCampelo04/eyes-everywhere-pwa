@@ -1,41 +1,87 @@
 <template>
-  <div class="page">
-    <div class="content">
-      <input type="text" v-model="pesquisa" placeholder="🔍 Procurar..." class="search" />
+  <div class="login-bg" :class="{ 'light-mode': !darkMode }">
+    <!-- Toggle de tema no canto superior direito -->
+    <button class="theme-toggle" @click="toggleTheme">
+      <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+    </button>
 
-      <h2>Auditorias a Decorrer</h2>
-      <img src="../assets/auditoria-header.png" alt="Auditorias" class="header-img" />
+    <div class="page-container">
+      <!-- Header elegante -->
+      <div class="page-header">
+        <button class="back-btn" @click="$router.back()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h2 class="page-title">Auditorias A Decorrer</h2>
+      </div>
 
-      <div class="auditorias-list">
-        <div class="card" v-for="aud in auditoriasFiltradas" :key="aud.id" @click="$router.push(`/auditoria/${aud.id}`)">
-          <div class="data">
-            <span class="dia">{{ formatarData(aud.data).dia }}</span>
-            <span class="mes">{{ formatarData(aud.data).mes }}</span>
+      <!-- Search bar -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            v-model="pesquisa" 
+            placeholder="Procurar auditorias..." 
+            class="search-input"
+          />
+        </div>
+      </div>
+
+      <!-- Lista de auditorias -->
+      <div class="auditorias-container">
+        <div v-if="auditoriasFiltradas.length === 0" class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <h3>Nenhuma auditoria encontrada</h3>
+          <p>Não há auditorias a decorrer no momento</p>
+        </div>
+        
+        <div v-else class="auditorias-list">
+          <div 
+            class="auditoria-card" 
+            v-for="aud in auditoriasFiltradas" 
+            :key="aud.id" 
+            @click="$router.push(`/auditoria/${aud.id}`)"
+          >
+            <div class="auditoria-date">
+              <span class="date-day">{{ formatarData(aud.data).dia }}</span>
+              <span class="date-month">{{ formatarData(aud.data).mes }}</span>
+            </div>
+            <div class="auditoria-content">
+              <h3 class="auditoria-title">{{ aud.titulo }}</h3>
+              <div class="auditoria-details">
+                <p class="auditoria-time">
+                  <i class="fas fa-clock"></i>
+                  {{ formatarHora(aud.data) }}
+                </p>
+                <p class="auditoria-location">
+                  <i class="fas fa-map-marker-alt"></i>
+                  {{ aud.local || 'Localização não definida' }}
+                </p>
+              </div>
+              <span class="auditoria-type">{{ aud.tipo }}</span>
+            </div>
+            <i class="fas fa-chevron-right auditoria-arrow"></i>
           </div>
-          <div class="conteudo">
-            <h3>{{ aud.titulo }}</h3>
-            <p><strong>Horário:</strong> {{ formatarHora(aud.data) }}</p>
-            <p><strong>Localização:</strong> {{ aud.local || '---' }}</p>
-            <span class="tipo">{{ aud.tipo }}</span>
-          </div>
-          <i class="fas fa-chevron-right seta"></i>
         </div>
       </div>
     </div>
-    <NavBar />
+
+    <!-- Bottom Navigation Component -->
+    <BottomNav />
   </div>
 </template>
 
 <script>
-import NavBar from '../components/NavBar.vue'
+import BottomNav from '../components/BottomNav.vue'
 
 export default {
   name: 'AuditoriasAdecorrer',
-  components: { NavBar },
+  components: { BottomNav },
   data() {
     return {
       auditorias: [],
-      pesquisa: ''
+      pesquisa: '',
+      darkMode: true
     }
   },
   computed: {
@@ -46,37 +92,55 @@ export default {
     }
   },
   mounted() {
-    const armazenadas = localStorage.getItem('auditorias')
-    let lista = armazenadas ? JSON.parse(armazenadas) : []
-
-    if (!lista.length) {
-      lista = [
-        {
-          id: 1,
-          titulo: "Inspeção de Sinalização",
-          tipo: "Segurança Rodoviária",
-          data: new Date().toISOString(),
-          local: "Rua de Santo António, Braga",
-          descricao: "Verificar placas e marcações no cruzamento.",
-          documentos: "",
-          prioridade: "Alta",
-          especialistas: [],
-          materiais: "",
-          origem: "Pedido da Câmara"
-        }
-      ]
-      localStorage.setItem('auditorias', JSON.stringify(lista))
-    }
-
-    this.auditorias = lista
+    this.loadTheme()
+    this.loadData()
   },
   methods: {
+    loadTheme() {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme) {
+        this.darkMode = savedTheme === 'dark'
+      }
+    },
+    
+    toggleTheme() {
+      this.darkMode = !this.darkMode
+      localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
+    },
+
+    loadData() {
+      const armazenadas = localStorage.getItem('auditorias')
+      let lista = armazenadas ? JSON.parse(armazenadas) : []
+
+      if (!lista.length) {
+        lista = [
+          {
+            id: 1,
+            titulo: "Inspeção de Sinalização",
+            tipo: "Segurança Rodoviária",
+            data: new Date().toISOString(),
+            local: "Rua de Santo António, Braga",
+            descricao: "Verificar placas e marcações no cruzamento.",
+            documentos: "",
+            prioridade: "Alta",
+            especialistas: [],
+            materiais: "",
+            origem: "Pedido da Câmara"
+          }
+        ]
+        localStorage.setItem('auditorias', JSON.stringify(lista))
+      }
+
+      this.auditorias = lista
+    },
+
     formatarData(dataStr) {
       const data = new Date(dataStr)
       const dia = data.getDate().toString().padStart(2, '0')
       const mes = data.toLocaleString('pt-PT', { month: 'short' }).toUpperCase()
       return { dia, mes }
     },
+
     formatarHora(dataStr) {
       const data = new Date(dataStr)
       return `${data.getHours().toString().padStart(2, '0')}:${data.getMinutes().toString().padStart(2, '0')}`
@@ -86,125 +150,395 @@ export default {
 </script>
 
 <style scoped>
-.page {
-  flex: 1 1 auto;
+/* Variáveis CSS para temas - IGUAIS AO LOGIN */
+:root {
+  --bg-primary: #0a0f1a;
+  --bg-secondary: #132340;
+  --text-primary: #ffffff;
+  --text-secondary: #aad1ff;
+  --accent-primary: #277AFF;
+  --accent-secondary: #00aaff;
+}
+
+.light-mode {
+  --bg-primary: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-secondary: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --accent-primary: #277AFF;
+  --accent-secondary: #00aaff;
+}
+
+/* Background principal - IGUAL AO LOGIN */
+.login-bg {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: all 0.5s ease;
+  padding: 10px 10px 80px 10px;
+}
+
+.login-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(39, 122, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0, 170, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Toggle de tema - IGUAL AO LOGIN */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Container principal - IGUAL AO LOGIN */
+.page-container {
+  background: var(--bg-secondary);
+  padding: 24px 20px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  padding: 32px 20px 70px 20px;
-  background: transparent;
-  overflow: hidden;
-  min-width: 0;
-  min-height: 0;
+  gap: 20px;
+  position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.5s ease;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-.content {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
+/* Header */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 
-.search {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
-  margin: 16px 0;
-  font-size: 14px;
-  background-color: #ffffff;
-  color: #333;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
-h2 {
+.back-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: scale(1.05);
+}
+
+.page-title {
+  color: var(--text-primary);
   font-size: 18px;
-  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
 }
 
-.header-img {
+/* Search */
+.search-container {
+  margin-bottom: 8px;
+}
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.search-input {
   width: 100%;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
+  padding: 12px 12px 12px 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(39, 122, 255, 0.1);
+}
+
+/* Lista de auditorias */
+.auditorias-container {
+  flex: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.8;
 }
 
 .auditorias-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding-top: 0.5rem;
-}
-
-.card {
-  background-color: #1c2e4a;
-  border-radius: 16px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
   gap: 12px;
-  position: relative;
-  min-height: 80px;
 }
 
-.data {
-  background-color: #277aff;
+.auditoria-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.auditoria-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(39, 122, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.auditoria-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 8px 25px rgba(39, 122, 255, 0.15);
+}
+
+.auditoria-card:hover::before {
+  opacity: 1;
+}
+
+.auditoria-date {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   border-radius: 50%;
   width: 50px;
   height: 50px;
-  font-weight: bold;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
-.dia {
+.date-day {
   font-size: 16px;
   line-height: 1;
 }
 
-.mes {
+.date-month {
   font-size: 10px;
   text-transform: uppercase;
   margin-top: 2px;
+  opacity: 0.9;
 }
 
-.conteudo {
+.auditoria-content {
   flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.auditoria-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.auditoria-details {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 
-.conteudo h3 {
-  margin: 0 0 4px;
-  font-size: 15px;
-  color: white;
+.auditoria-time,
+.auditoria-location {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.conteudo p {
-  margin: 2px 0;
-  font-size: 13px;
-  color: #dce4f7;
+.auditoria-time i,
+.auditoria-location i {
+  font-size: 10px;
+  opacity: 0.8;
+  width: 12px;
 }
 
-.tipo {
+.auditoria-type {
   font-size: 11px;
-  background-color: #0f203f;
-  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  padding: 4px 8px;
   border-radius: 8px;
   display: inline-block;
-  margin-top: 6px;
-  width: fit-content;
   font-weight: 500;
-  color: white;
 }
 
-.seta {
-  color: white;
-  font-size: 16px;
-  margin-left: auto;
-  align-self: center;
+.auditoria-arrow {
+  color: var(--text-secondary);
+  font-size: 14px;
+  opacity: 0.6;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.auditoria-card:hover .auditoria-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .login-bg {
+    padding: 5px 5px 80px 5px;
+  }
+
+  .page-container {
+    margin: 0;
+    padding: 20px 16px;
+    border-radius: 16px;
+    max-width: 100%;
+  }
+
+  .theme-toggle {
+    width: 35px;
+    height: 35px;
+    top: 10px;
+    right: 10px;
+    font-size: 14px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
+
+  .auditoria-card {
+    padding: 14px;
+  }
+
+  .auditoria-date {
+    width: 45px;
+    height: 45px;
+  }
+
+  .date-day {
+    font-size: 14px;
+  }
+
+  .auditoria-title {
+    font-size: 14px;
+  }
+}
+
+/* Animação de entrada */
+.page-container {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
