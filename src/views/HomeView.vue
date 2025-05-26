@@ -72,11 +72,11 @@
           <i class="fas fa-chevron-right menu-arrow"></i>
         </div>
 
-        <div class="menu-item" @click="$router.push('/especialistas')">
+        <div class="menu-item" @click="$router.push('/especialistas/ver')">
           <div class="menu-icon purple-icon">
             <i class="fas fa-users"></i>
           </div>
-          <div class="menu-content">
+          <div class="menu-content" >
             <h3>Especialistas</h3>
             <p>{{ especialistasCount }} na equipa</p>
           </div>

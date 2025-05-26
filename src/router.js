@@ -13,8 +13,8 @@ import AuditoriaConcluidaDetalhe from './views/AuditoriaConcluidaDetalhe.vue'
 import MapaAuditorias from './views/MapaAuditorias.vue'
 import DetalheNovaAuditoria from './views/DetalheNovaAuditoria.vue'
 import Definicoes from './views/Definicoes.vue'
-import EspecialistaDashboard from './views/Especialista/EspecialistaDasboard.vue'
-import EspecialistaHome from './views/Especialista/EspecialistaHome.vue'
+import EspecialistaDashboard from './views/Especialista/EspecialistaDashboard.vue'
+import VerEspecialistas from './views/VerEspecialistas.vue'
 import Home from './views/Especialista/Home.vue'
 import Detalhe from './views/Especialista/Detalhe.vue'
 
@@ -35,7 +35,7 @@ const routes = [
   { path: '/auditoriasnovas/:id', component: DetalheNovaAuditoria },
   { path: '/definicoes', component: Definicoes },
   { path: '/especialista/dashboard', component: EspecialistaDashboard },
-  {path: '/especialista/home', component: EspecialistaHome },
+  {path: '/especialistas/ver', component: VerEspecialistas },
   {path: '/home/especialista', component: Home },
   {path:'/detalhe/especialista/:id', component: Detalhe }
 ]

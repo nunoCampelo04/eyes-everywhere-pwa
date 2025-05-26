@@ -164,7 +164,7 @@
 </template>
 
 <script>
-import BottomNav from '../../components/BottomNav.vue'
+import BottomNav from '../components/BottomNav.vue'
 
 export default {
   name: 'EspecialistasHome',
