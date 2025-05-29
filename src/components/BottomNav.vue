@@ -79,9 +79,11 @@ export default {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 12px 20px;
+  padding: 8px 20px;
   z-index: 1000;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  height: 60px;
+   z-index: 9999;
 }
 
 .nav-item {
@@ -94,9 +96,9 @@ export default {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 12px;
-  min-width: 60px;
+  min-width: 50px;
   opacity: 0.7;
 }
 
@@ -126,12 +128,13 @@ export default {
 /* Responsividade */
 @media (max-width: 480px) {
   .bottom-navigation {
-    padding: 10px 16px;
+    padding: 6px 16px;
+    height: 55px;
   }
   
   .nav-item {
-    padding: 6px 12px;
-    min-width: 50px;
+    padding: 4px 8px;
+    min-width: -8px;
   }
   
   .nav-item i {

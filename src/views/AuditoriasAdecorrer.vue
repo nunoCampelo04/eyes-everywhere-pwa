@@ -18,12 +18,7 @@
       <div class="search-container">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
-            v-model="pesquisa" 
-            placeholder="Procurar auditorias..." 
-            class="search-input"
-          />
+          <input type="text" v-model="pesquisa" placeholder="Procurar auditorias..." class="search-input" />
         </div>
       </div>
 
@@ -34,14 +29,10 @@
           <h3>Nenhuma auditoria encontrada</h3>
           <p>Não há auditorias a decorrer no momento</p>
         </div>
-        
+
         <div v-else class="auditorias-list">
-          <div 
-            class="auditoria-card" 
-            v-for="aud in auditoriasFiltradas" 
-            :key="aud.id" 
-            @click="$router.push(`/auditoria/${aud.id}`)"
-          >
+          <div class="auditoria-card" v-for="aud in auditoriasFiltradas" :key="aud.id"
+            @click="$router.push(`/auditoria/${aud.id}`)">
             <div class="auditoria-date">
               <span class="date-day">{{ formatarData(aud.data).dia }}</span>
               <span class="date-month">{{ formatarData(aud.data).mes }}</span>
@@ -64,8 +55,8 @@
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
     <!-- Bottom Navigation Component -->
     <BottomNav />
   </div>
@@ -102,7 +93,7 @@ export default {
         this.darkMode = savedTheme === 'dark'
       }
     },
-    
+
     toggleTheme() {
       this.darkMode = !this.darkMode
       localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
@@ -161,7 +152,7 @@ export default {
 }
 
 .light-mode {
-  --bg-primary: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --text-primary: #333333;
   --text-secondary: #666666;
@@ -195,6 +186,7 @@ export default {
     radial-gradient(circle at 20% 80%, rgba(39, 122, 255, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(0, 170, 255, 0.1) 0%, transparent 50%);
   pointer-events: none;
+
 }
 
 /* Toggle de tema - IGUAL AO LOGIN */
@@ -223,12 +215,11 @@ export default {
 .page-container {
   background: var(--bg-secondary);
   padding: 24px 20px;
-  border-radius: 20px;
   width: 100%;
   max-width: 400px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 80px;
   position: relative;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -275,11 +266,18 @@ export default {
   font-weight: 600;
   margin: 0;
   font-family: 'Poppins', sans-serif;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  justify-content: flex-start; 
+  align-items: center;
+  padding-left: 40px; 
+  margin-bottom: -60px; /* Ajuste para alinhar com o botão de voltar */
 }
 
 /* Search */
 .search-container {
-  margin-bottom: 8px;
+  margin-bottom: -40px;
 }
 
 .search-input-wrapper {
@@ -369,6 +367,7 @@ export default {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  
 }
 
 .auditoria-card::before {
@@ -536,6 +535,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

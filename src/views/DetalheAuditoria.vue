@@ -25,343 +25,194 @@
         </div>
       </div>
 
-      <!-- Formulário de edição -->
+      <!-- Tabs de categorias -->
+      <div class="tabs" ref="tabsBar">
+        <button v-for="(tab, i) in tabs" :key="i" :class="{ active: activeTab === i }" @click="setActiveTab(i)"
+          ref="tabBtns">
+          <i :class="tab.icon"></i> {{ tab.label }}
+        </button>
+      </div>
+
+      <!-- Formulário dividido por categorias -->
       <div class="form-section">
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-heading"></i>
-            Título
-          </label>
-          <input 
-            type="text" 
-            v-model="auditoria.titulo" 
-            class="form-input"
-            @input="marcarAlteracoes"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-tag"></i>
-            Tipo
-          </label>
-          <select v-model="auditoria.tipo" class="form-select" @change="marcarAlteracoes">
-            <option value="Segurança Rodoviária">Segurança Rodoviária</option>
-            <option value="Infraestruturas">Infraestruturas</option>
-            <option value="Ambiente">Ambiente</option>
-            <option value="Urbanismo">Urbanismo</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-calendar"></i>
-            Data e Hora
-          </label>
-          <input 
-            type="datetime-local" 
-            v-model="dataFormatada" 
-            class="form-input"
-            @input="marcarAlteracoes"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-map-marker-alt"></i>
-            Localização
-          </label>
-          <input 
-            type="text" 
-            v-model="auditoria.local" 
-            class="form-input"
-            placeholder="Endereço ou coordenadas"
-            @input="marcarAlteracoes"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-map"></i>
-            Mapa da Localização
-          </label>
-          <div class="map-section">
-            <div id="detailMap" class="map-container"></div>
-            <div v-if="!mapLoaded" class="map-loading">
-              <i class="fas fa-spinner fa-spin"></i>
-              <p>Carregando mapa...</p>
-            </div>
+        <!-- GERAL -->
+        <div v-show="activeTab === 0">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-heading"></i>
+              Título
+            </label>
+            <input type="text" v-model="auditoria.titulo" class="form-input" @input="marcarAlteracoes" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-tag"></i>
+              Tipo
+            </label>
+            <select v-model="auditoria.tipo" class="form-select" @change="marcarAlteracoes">
+              <option value="Segurança Rodoviária">Segurança Rodoviária</option>
+              <option value="Infraestruturas">Infraestruturas</option>
+              <option value="Ambiente">Ambiente</option>
+              <option value="Urbanismo">Urbanismo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-calendar"></i>
+              Data e Hora
+            </label>
+            <input type="datetime-local" v-model="dataFormatada" class="form-input" @input="marcarAlteracoes" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-exclamation-triangle"></i>
+              Prioridade
+            </label>
+            <select v-model="auditoria.prioridade" class="form-select" @change="marcarAlteracoes">
+              <option value="Baixa">Baixa</option>
+              <option value="Média">Média</option>
+              <option value="Alta">Alta</option>
+              <option value="Crítica">Crítica</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-align-left"></i>
+              Descrição
+            </label>
+            <textarea v-model="auditoria.descricao" class="form-textarea" rows="4"
+              placeholder="Descreva os detalhes da auditoria..." @input="marcarAlteracoes"></textarea>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-align-left"></i>
-            Descrição
-          </label>
-          <textarea 
-            v-model="auditoria.descricao" 
-            class="form-textarea"
-            rows="4"
-            placeholder="Descreva os detalhes da auditoria..."
-            @input="marcarAlteracoes"
-          ></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-exclamation-triangle"></i>
-            Prioridade
-          </label>
-          <select v-model="auditoria.prioridade" class="form-select" @change="marcarAlteracoes">
-            <option value="Baixa">Baixa</option>
-            <option value="Média">Média</option>
-            <option value="Alta">Alta</option>
-            <option value="Crítica">Crítica</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-users"></i>
-            Especialistas
-          </label>
-          <div class="especialistas-selector">
-            <div class="especialistas-disponiveis">
-              <h5>Disponíveis:</h5>
-              <div class="especialista-list">
-                <div 
-                  v-for="esp in especialistasDisponiveis" 
-                  :key="esp.id"
-                  class="especialista-item"
-                  @click="adicionarEspecialista(esp)"
-                >
-                  <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar">
-                  <span>{{ esp.nome }}</span>
-                  <i class="fas fa-plus"></i>
-                </div>
-              </div>
-            </div>
-            
-            <div class="especialistas-selecionados">
-              <h5>Selecionados:</h5>
-              <div class="especialista-list">
-                <div 
-                  v-for="esp in especialistasSelecionados" 
-                  :key="esp.id"
-                  class="especialista-item selected"
-                  @click="removerEspecialista(esp)"
-                >
-                  <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar">
-                  <span>{{ esp.nome }}</span>
-                  <i class="fas fa-times"></i>
-                </div>
+        <!-- LOCALIZAÇÃO -->
+        <div v-show="activeTab === 1">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-map-marker-alt"></i>
+              Localização
+            </label>
+            <input type="text" v-model="auditoria.local" class="form-input" placeholder="Endereço ou coordenadas"
+              @input="marcarAlteracoes" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-map"></i>
+              Mapa da Localização
+            </label>
+            <div class="map-section">
+              <div id="detailMap" class="map-container"></div>
+              <div v-if="!mapLoaded" class="map-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando mapa...</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-tools"></i>
-            Materiais
-          </label>
-          <input 
-            type="text" 
-            v-model="auditoria.materiais" 
-            class="form-input"
-            placeholder="Materiais necessários"
-            @input="marcarAlteracoes"
-          />
+        <!-- RECURSOS -->
+        <div v-show="activeTab === 2">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-users"></i>
+              Especialistas
+            </label>
+            <div class="especialistas-selector">
+              <div class="especialistas-disponiveis">
+                <h5>Disponíveis:</h5>
+                <div class="especialista-list">
+                  <div v-for="esp in especialistasDisponiveis" :key="esp.id" class="especialista-item"
+                    @click="adicionarEspecialista(esp)">
+                    <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar">
+                    <span>{{ esp.nome }}</span>
+                    <i class="fas fa-plus"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="especialistas-selecionados">
+                <h5>Selecionados:</h5>
+                <div class="especialista-list">
+                  <div v-for="esp in especialistasSelecionados" :key="esp.id" class="especialista-item selected"
+                    @click="removerEspecialista(esp)">
+                    <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar">
+                    <span>{{ esp.nome }}</span>
+                    <i class="fas fa-times"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-tools"></i>
+              Materiais
+            </label>
+            <input type="text" v-model="auditoria.materiais" class="form-input" placeholder="Materiais necessários"
+              @input="marcarAlteracoes" />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-file-alt"></i>
-            Documentos
-          </label>
-          <div class="documentos-section">
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="anexarDocumento" 
-              multiple 
-              accept=".pdf,.doc,.docx,.jpg,.png"
-              style="display: none"
-            >
-            <button class="anexar-btn" @click="$refs.fileInput.click()">
-              <i class="fas fa-paperclip"></i>
-              <span>Anexar Documento</span>
-            </button>
-            
-            <div v-if="documentosAnexados.length" class="documentos-anexados">
-              <div 
-                v-for="(doc, index) in documentosAnexados" 
-                :key="index"
-                class="documento-item"
-              >
-                <i :class="getDocumentIcon(doc.type)"></i>
-                <span class="documento-nome">{{ doc.name }}</span>
-                <button class="ver-documento" @click="visualizarDocumento(doc)">
-                  <i class="fas fa-eye"></i>
+        <!-- ANEXOS -->
+        <div v-show="activeTab === 3">
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-file-alt"></i>
+              Documentos
+            </label>
+            <div class="documentos-section">
+              <input type="file" ref="fileInput" @change="anexarDocumento" multiple accept=".pdf,.doc,.docx,.jpg,.png"
+                style="display: none">
+              <button class="anexar-btn" @click="$refs.fileInput.click()">
+                <i class="fas fa-paperclip"></i>
+                <span>Anexar Documento</span>
+              </button>
+              <div v-if="documentosAnexados.length" class="documentos-anexados">
+                <div v-for="(doc, index) in documentosAnexados" :key="index" class="documento-item">
+                  <i :class="getDocumentIcon(doc.type)"></i>
+                  <span class="documento-nome">{{ doc.name }}</span>
+                  <button class="ver-documento" @click="visualizarDocumento(doc)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="remover-documento" @click="removerDocumento(index)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-microphone"></i>
+              Gravação de Áudio
+            </label>
+            <div class="audio-section">
+              <div class="audio-controls">
+                <button class="audio-btn record" :class="{ recording: gravandoAudio }" @click="toggleGravacao">
+                  <i :class="gravandoAudio ? 'fas fa-stop' : 'fas fa-microphone'"></i>
+                  <span>{{ gravandoAudio ? 'Parar' : 'Gravar' }}</span>
                 </button>
-                <button class="remover-documento" @click="removerDocumento(index)">
+                <button v-if="audioGravado" class="audio-btn play" @click="reproduzirAudio">
+                  <i class="fas fa-play"></i>
+                  <span>Reproduzir</span>
+                </button>
+                <button v-if="audioGravado" class="audio-btn delete" @click="removerAudio">
                   <i class="fas fa-trash"></i>
+                  <span>Remover</span>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-microphone"></i>
-            Gravação de Áudio
-          </label>
-          <div class="audio-section">
-            <div class="audio-controls">
-              <button 
-                class="audio-btn record" 
-                :class="{ recording: gravandoAudio }"
-                @click="toggleGravacao"
-              >
-                <i :class="gravandoAudio ? 'fas fa-stop' : 'fas fa-microphone'"></i>
-                <span>{{ gravandoAudio ? 'Parar' : 'Gravar' }}</span>
-              </button>
-              
-              <button 
-                v-if="audioGravado" 
-                class="audio-btn play" 
-                @click="reproduzirAudio"
-              >
-                <i class="fas fa-play"></i>
-                <span>Reproduzir</span>
-              </button>
-              
-              <button 
-                v-if="audioGravado" 
-                class="audio-btn delete" 
-                @click="removerAudio"
-              >
-                <i class="fas fa-trash"></i>
-                <span>Remover</span>
-              </button>
-            </div>
-            
-            <div v-if="audioGravado" class="audio-info">
-              <i class="fas fa-volume-up"></i>
-              <span>Áudio gravado ({{ formatarDuracao(audioGravado.duration) }})</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ações -->
-      <div class="actions-section">
-        <button class="action-btn complete" @click="concluirAuditoria">
-          <i class="fas fa-check"></i>
-          <span>Marcar como Concluída</span>
-        </button>
-        
-        <button class="action-btn danger" @click="eliminarAuditoria">
-          <i class="fas fa-trash"></i>
-          <span>Eliminar Auditoria</span>
-        </button>
-      </div>
-
-      <!-- Modal de visualização de documento -->
-      <div v-if="documentoVisualizando" class="modal-overlay" @click.self="fecharModal">
-        <div class="modal-container" :class="{ 'modal-large': isLargeContent }">
-          <div class="modal-header">
-            <div class="modal-title-section">
-              <h3 class="modal-title">{{ documentoVisualizando.name }}</h3>
-              <span class="modal-subtitle">{{ formatFileSize(documentoVisualizando.size) }}</span>
-            </div>
-            <div class="modal-controls">
-              <button v-if="documentosAnexados.length > 1" class="modal-nav-btn" @click="documentoAnterior" :disabled="currentDocIndex === 0">
-                <i class="fas fa-chevron-left"></i>
-              </button>
-              <span v-if="documentosAnexados.length > 1" class="modal-counter">
-                {{ currentDocIndex + 1 }} / {{ documentosAnexados.length }}
-              </span>
-              <button v-if="documentosAnexados.length > 1" class="modal-nav-btn" @click="proximoDocumento" :disabled="currentDocIndex === documentosAnexados.length - 1">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-              <button class="modal-action-btn download" @click="downloadDocumento(documentoVisualizando)" title="Download">
-                <i class="fas fa-download"></i>
-              </button>
-              <button class="modal-action-btn close" @click="fecharModal" title="Fechar">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="modal-content">
-            <div class="document-viewer">
-              <!-- Visualização de Imagens -->
-              <div v-if="isImageFile(documentoVisualizando)" class="image-viewer">
-                <img 
-                  :src="documentoVisualizando.data" 
-                  :alt="documentoVisualizando.name"
-                  class="document-image"
-                  @load="onImageLoad"
-                />
-                <div class="image-controls">
-                  <button class="image-control-btn" @click="zoomIn" title="Zoom In">
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button class="image-control-btn" @click="zoomOut" title="Zoom Out">
-                    <i class="fas fa-search-minus"></i>
-                  </button>
-                  <button class="image-control-btn" @click="resetZoom" title="Tamanho Original">
-                    <i class="fas fa-expand-arrows-alt"></i>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Visualização de PDFs -->
-              <div v-else-if="isPDFFile(documentoVisualizando)" class="pdf-viewer">
-                <iframe 
-                  :src="documentoVisualizando.data" 
-                  class="pdf-frame"
-                  title="Visualizador de PDF"
-                ></iframe>
-                <div class="pdf-fallback">
-                  <i class="fas fa-file-pdf"></i>
-                  <p>Visualizador de PDF</p>
-                  <small>Se o PDF não carregar, use o botão de download</small>
-                </div>
-              </div>
-              
-              <!-- Visualização de Documentos de Texto -->
-              <div v-else-if="isTextFile(documentoVisualizando)" class="text-viewer">
-                <div class="text-content" v-html="documentContent"></div>
-              </div>
-              
-              <!-- Outros tipos de arquivo -->
-              <div v-else class="file-preview">
-                <div class="file-icon-large">
-                  <i :class="getDocumentIcon(documentoVisualizando.type)"></i>
-                </div>
-                <div class="file-info">
-                  <h4>{{ documentoVisualizando.name }}</h4>
-                  <p class="file-type">{{ getFileTypeDescription(documentoVisualizando.type) }}</p>
-                  <p class="file-size">{{ formatFileSize(documentoVisualizando.size) }}</p>
-                </div>
-                <button class="preview-download-btn" @click="downloadDocumento(documentoVisualizando)">
-                  <i class="fas fa-download"></i>
-                  <span>Baixar Arquivo</span>
-                </button>
+              <div v-if="audioGravado" class="audio-info">
+                <i class="fas fa-volume-up"></i>
+                <span>Áudio gravado ({{ formatarDuracao(audioGravado.duration) }})</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-    <!-- Bottom Navigation Component -->
-    <BottomNav />
+      <!-- Bottom Navigation Component -->
+      <BottomNav />
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -399,7 +250,15 @@ export default {
       documentoVisualizando: null,
       currentDocIndex: 0,
       documentContent: '',
-      imageZoom: 1
+      imageZoom: 1,
+
+      tabs: [
+        { label: 'Geral', icon: 'fas fa-info-circle' },
+        { label: 'Localização', icon: 'fas fa-map-marker-alt' },
+        { label: 'Recursos', icon: 'fas fa-users' },
+        { label: 'Anexos', icon: 'fas fa-file-alt' },
+      ],
+      activeTab: 0,
     }
   },
   computed: {
@@ -434,7 +293,7 @@ export default {
         this.darkMode = savedTheme === 'dark'
       }
     },
-    
+
     toggleTheme() {
       this.darkMode = !this.darkMode
       localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
@@ -444,7 +303,7 @@ export default {
       const id = this.$route.params.id
       const auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
       const auditoria = auditorias.find(a => a.id == id)
-      
+
       if (auditoria) {
         this.auditoria = { ...auditoria }
       } else {
@@ -465,12 +324,12 @@ export default {
     guardarAlteracoes() {
       const auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
       const index = auditorias.findIndex(a => a.id == this.auditoria.id)
-      
+
       if (index !== -1) {
         auditorias[index] = { ...this.auditoria }
         localStorage.setItem('auditorias', JSON.stringify(auditorias))
         this.alteracoesPendentes = false
-        
+
         // Feedback visual
         const btn = document.querySelector('.save-btn')
         btn.style.background = 'linear-gradient(135deg, #10b981, #059669)'
@@ -486,7 +345,7 @@ export default {
         let auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
         auditorias = auditorias.filter(a => a.id != this.auditoria.id)
         localStorage.setItem('auditorias', JSON.stringify(auditorias))
-        
+
         // Adicionar às concluídas
         const concluidas = JSON.parse(localStorage.getItem('auditoriasConcluidas') || '[]')
         concluidas.push({
@@ -494,7 +353,7 @@ export default {
           dataConclusao: new Date().toISOString()
         })
         localStorage.setItem('auditoriasConcluidas', JSON.stringify(concluidas))
-        
+
         this.$router.push('/auditorias/concluidas')
       }
     },
@@ -504,7 +363,7 @@ export default {
         let auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
         auditorias = auditorias.filter(a => a.id != this.auditoria.id)
         localStorage.setItem('auditorias', JSON.stringify(auditorias))
-        
+
         this.$router.back()
       }
     },
@@ -525,6 +384,28 @@ export default {
     removerEspecialista(especialista) {
       this.especialistasSelecionados = this.especialistasSelecionados.filter(e => e.id !== especialista.id)
       this.marcarAlteracoes()
+    },
+
+    setActiveTab(i) {
+      this.activeTab = i
+      this.$nextTick(() => {
+        this.scrollToActiveTab()
+      })
+    },
+    scrollToActiveTab() {
+      const tabsBar = this.$refs.tabsBar
+      const tabBtns = this.$refs.tabBtns
+      if (!tabsBar || !tabBtns || !tabBtns[this.activeTab]) return
+      const activeBtn = tabBtns[this.activeTab]
+      const barRect = tabsBar.getBoundingClientRect()
+      const btnRect = activeBtn.getBoundingClientRect()
+      // Se o botão ativo não está totalmente visível, faz scroll
+      if (btnRect.left < barRect.left || btnRect.right > barRect.right) {
+        tabsBar.scrollTo({
+          left: activeBtn.offsetLeft - tabsBar.offsetWidth / 2 + activeBtn.offsetWidth / 2,
+          behavior: 'smooth'
+        })
+      }
     },
 
     anexarDocumento(event) {
@@ -548,7 +429,7 @@ export default {
       this.documentoVisualizando = documento
       this.currentDocIndex = this.documentosAnexados.findIndex(doc => doc === documento)
       this.imageZoom = 1
-      
+
       // Se for arquivo de texto, carregar conteúdo
       if (this.isTextFile(documento)) {
         this.loadTextContent(documento)
@@ -591,10 +472,10 @@ export default {
     },
 
     isTextFile(doc) {
-      return doc.type.startsWith('text/') || 
-             doc.type === 'application/json' ||
-             doc.name.endsWith('.txt') ||
-             doc.name.endsWith('.md')
+      return doc.type.startsWith('text/') ||
+        doc.type === 'application/json' ||
+        doc.name.endsWith('.txt') ||
+        doc.name.endsWith('.md')
     },
 
     getFileTypeDescription(type) {
@@ -607,11 +488,11 @@ export default {
         'text/plain': 'Arquivo de Texto',
         'application/json': 'Arquivo JSON'
       }
-      
+
       if (type.startsWith('image/')) return 'Imagem'
       if (type.startsWith('video/')) return 'Vídeo'
       if (type.startsWith('audio/')) return 'Áudio'
-      
+
       return types[type] || 'Arquivo'
     },
 
@@ -711,10 +592,10 @@ export default {
           position: window.google.maps.ControlPosition.RIGHT_BOTTOM
         }
       })
-      
+
       this.mapa = map
       this.mapLoaded = true
-      
+
       if (this.auditoria.local) {
         await this.adicionarMarcador()
       }
@@ -731,7 +612,7 @@ export default {
         const endereco = encodeURIComponent(this.auditoria.local)
         const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${endereco}&format=json`)
         const dados = await response.json()
-        
+
         if (dados.length === 0) return
 
         const { lat, lon } = dados[0]
@@ -754,7 +635,7 @@ export default {
             <p style="margin: 0; font-size: 14px;"><strong>Localização:</strong> ${this.auditoria.local}</p>
           </div>
         `
-        
+
         const info = new window.google.maps.InfoWindow({
           content: contentString
         })
@@ -876,12 +757,12 @@ export default {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
         this.mediaRecorder = new MediaRecorder(stream)
-        
+
         const chunks = []
         this.mediaRecorder.ondataavailable = (event) => {
           chunks.push(event.data)
         }
-        
+
         this.mediaRecorder.onstop = () => {
           const blob = new Blob(chunks, { type: 'audio/wav' })
           const url = URL.createObjectURL(blob)
@@ -892,7 +773,7 @@ export default {
           }
           this.marcarAlteracoes()
         }
-        
+
         this.mediaRecorder.start()
         this.gravandoAudio = true
         this.inicioGravacao = Date.now()
@@ -906,7 +787,7 @@ export default {
       if (this.mediaRecorder && this.gravandoAudio) {
         this.mediaRecorder.stop()
         this.gravandoAudio = false
-        
+
         // Parar todas as tracks do stream
         this.mediaRecorder.stream.getTracks().forEach(track => track.stop())
       }
@@ -973,13 +854,14 @@ export default {
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch; /* <-- IMPORTANTE! */
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
   transition: all 0.5s ease;
-  padding: 10px 10px 80px 10px;
+  padding: 10px;
 }
 
 .login-bg::before {
@@ -1020,7 +902,7 @@ export default {
 /* Container principal - IGUAL AO LOGIN */
 .page-container {
   background: var(--bg-secondary);
-  padding: 24px 20px;
+  padding: 24px 20px; 
   border-radius: 20px;
   width: 100%;
   max-width: 400px;
@@ -1035,7 +917,7 @@ export default {
     0 0 0 1px rgba(255, 255, 255, 0.05);
   transition: all 0.5s ease;
   margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 80px; 
 }
 
 /* Header */
@@ -1085,6 +967,36 @@ export default {
   font-weight: 600;
   margin: 0;
   font-family: 'Poppins', sans-serif;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+}
+
+.tabs button.active {
+  color: var(--accent-primary);
+  border-bottom: 2px solid var(--accent-primary);
+  background: rgba(39, 122, 255, 0.05);
 }
 
 /* Status Section */
@@ -1423,14 +1335,14 @@ export default {
 /* Responsividade */
 @media (max-width: 480px) {
   .login-bg {
-    padding: 5px 5px 80px 5px;
+    padding: 5px; 
   }
-
   .page-container {
-    margin: 0;
-    padding: 20px 16px;
+    padding: 16px 8px; 
     border-radius: 16px;
     max-width: 100%;
+    margin-top: 10px;
+    margin-bottom: 70px; 
   }
 
   .theme-toggle {
@@ -1467,6 +1379,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1555,6 +1468,7 @@ export default {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -1830,42 +1744,42 @@ export default {
   .modal-overlay {
     padding: 10px;
   }
-  
+
   .modal-container {
     width: 95%;
     max-height: 85vh;
   }
-  
+
   .modal-container.modal-large {
     max-width: 95vw;
     max-height: 85vh;
   }
-  
+
   .modal-header {
     padding: 16px;
   }
-  
+
   .modal-title {
     font-size: 16px;
   }
-  
+
   .modal-controls {
     gap: 6px;
   }
-  
+
   .modal-nav-btn,
   .modal-action-btn {
     width: 32px;
     height: 32px;
     font-size: 12px;
   }
-  
+
   .image-controls {
     bottom: 10px;
     padding: 6px;
     gap: 6px;
   }
-  
+
   .image-control-btn {
     width: 28px;
     height: 28px;
