@@ -209,7 +209,7 @@ export default {
 }
 
 .light-mode {
-  --bg-primary: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --text-primary: #333333;
   --text-secondary: #666666;

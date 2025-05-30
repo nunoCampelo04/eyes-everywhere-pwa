@@ -1,12 +1,12 @@
 <template>
   <div class="login-bg" :class="{ 'light-mode': !darkMode }">
-    <!-- Toggle de tema no canto superior direito -->
+    <!-- Toggle de tema -->
     <button class="theme-toggle" @click="toggleTheme">
       <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
     </button>
 
     <div class="page-container">
-      <!-- Header elegante -->
+      <!-- Header -->
       <div class="page-header">
         <button class="back-btn" @click="$router.back()">
           <i class="fas fa-arrow-left"></i>
@@ -23,13 +23,12 @@
           <label class="filter-label">Tipo de Auditoria</label>
           <select v-model="filtroTipo" class="filter-select" @change="atualizarMarcadores">
             <option value="">Todos os tipos</option>
-            <option value="Segurança Rodoviária">Segurança Rodoviária</option>
-            <option value="Infraestruturas">Infraestruturas</option>
-            <option value="Ambiente">Ambiente</option>
-            <option value="Urbanismo">Urbanismo</option>
+            <option>Segurança Rodoviária</option>
+            <option>Infraestruturas</option>
+            <option>Ambiente</option>
+            <option>Urbanismo</option>
           </select>
         </div>
-
         <div class="filter-group">
           <label class="filter-label">Status</label>
           <select v-model="filtroStatus" class="filter-select" @change="atualizarMarcadores">
@@ -41,57 +40,21 @@
         </div>
       </div>
 
-      <!-- Mapa -->
-      <div class="map-section">
-        <div id="map" class="map-container"></div>
+      <!-- Mapa (clique expande) -->
+      <div class="map-section" :class="{ fullscreen: mapaExpandido }">
+        <div
+          id="map"
+          class="map-container"
+          ref="mapContainer"
+          @click="toggleMapExpand"
+        ></div>
         <div v-if="!mapLoaded" class="map-loading">
           <i class="fas fa-spinner fa-spin"></i>
           <p>Carregando mapa...</p>
         </div>
       </div>
 
-      <!-- Detalhes da auditoria selecionada -->
-      <div v-if="auditoriaSelecionada" class="details-section">
-        <div class="details-card">
-          <div class="details-header">
-            <h3 class="details-title">{{ auditoriaSelecionada.titulo }}</h3>
-            <button class="close-details" @click="auditoriaSelecionada = null">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          
-          <div class="details-content">
-            <div class="detail-item">
-              <i class="fas fa-tag"></i>
-              <span>{{ auditoriaSelecionada.tipo }}</span>
-            </div>
-            
-            <div class="detail-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>{{ auditoriaSelecionada.local || 'Localização não definida' }}</span>
-            </div>
-            
-            <div class="detail-item">
-              <i class="fas fa-calendar"></i>
-              <span>{{ formatarData(auditoriaSelecionada.data) }}</span>
-            </div>
-            
-            <div class="detail-item">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span>{{ auditoriaSelecionada.prioridade }}</span>
-            </div>
-          </div>
-          
-          <div class="details-actions">
-            <button class="details-btn" @click="verDetalhes(auditoriaSelecionada)">
-              <i class="fas fa-eye"></i>
-              <span>Ver Detalhes</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lista de auditorias -->
+      <!-- Lista resumida -->
       <div class="list-section">
         <div class="list-header">
           <h3 class="list-title">
@@ -99,30 +62,28 @@
             Auditorias ({{ auditoriasFiltradas.length }})
           </h3>
         </div>
-        
         <div class="auditorias-list">
-          <div 
-            v-for="auditoria in auditoriasFiltradas.slice(0, 5)" 
-            :key="auditoria.id"
+          <div
+            v-for="aud in auditoriasFiltradas.slice(0, 5)"
+            :key="aud.id"
             class="auditoria-item"
-            :class="getStatusClass(auditoria)"
-            @click="focusAuditoria(auditoria)"
+            :class="aud.status"
+            @click="focusAuditoria(aud)"
           >
             <div class="auditoria-marker">
-              <i :class="getMarkerIcon(auditoria)"></i>
+              <i :class="getMarkerIcon(aud)"></i>
             </div>
             <div class="auditoria-info">
-              <h4 class="auditoria-title">{{ auditoria.titulo }}</h4>
-              <p class="auditoria-location">{{ auditoria.local || 'Localização não definida' }}</p>
+              <h4 class="auditoria-title">{{ aud.titulo }}</h4>
+              <p class="auditoria-location">{{ aud.local || 'Localização não definida' }}</p>
             </div>
             <div class="auditoria-status">
-              <span class="status-badge" :class="getStatusClass(auditoria)">
-                {{ getStatusText(auditoria) }}
+              <span class="status-badge" :class="aud.status">
+                {{ getStatusText(aud) }}
               </span>
             </div>
           </div>
         </div>
-        
         <div v-if="auditoriasFiltradas.length > 5" class="show-more">
           <button class="show-more-btn" @click="$router.push('/auditorias/adecorrer')">
             <span>Ver todas ({{ auditoriasFiltradas.length - 5 }} restantes)</span>
@@ -132,14 +93,13 @@
       </div>
     </div>
 
-    <!-- Bottom Navigation Component -->
     <BottomNav />
   </div>
 </template>
 
 <script>
 import BottomNav from '../components/BottomNav.vue'
-import { Loader } from "@googlemaps/js-api-loader"
+import { Loader } from '@googlemaps/js-api-loader'
 
 export default {
   name: 'MapaAuditorias',
@@ -149,14 +109,14 @@ export default {
       auditorias: [],
       auditoriasNovas: [],
       auditoriasConcluidas: [],
-      auditoriaSelecionada: null,
       showFilters: false,
       filtroTipo: '',
       filtroStatus: '',
       darkMode: true,
       mapa: null,
       mapLoaded: false,
-      marcadores: []
+      marcadores: [],
+      mapaExpandido: false
     }
   },
   computed: {
@@ -167,11 +127,10 @@ export default {
         ...this.auditoriasConcluidas.map(a => ({ ...a, status: 'concluida' }))
       ]
     },
-    
     auditoriasFiltradas() {
-      return this.todasAuditorias.filter(auditoria => {
-        const tipoMatch = !this.filtroTipo || auditoria.tipo === this.filtroTipo
-        const statusMatch = !this.filtroStatus || auditoria.status === this.filtroStatus
+      return this.todasAuditorias.filter(a => {
+        const tipoMatch = !this.filtroTipo || a.tipo === this.filtroTipo
+        const statusMatch = !this.filtroStatus || a.status === this.filtroStatus
         return tipoMatch && statusMatch
       })
     }
@@ -183,303 +142,82 @@ export default {
   },
   methods: {
     loadTheme() {
-      const savedTheme = localStorage.getItem('theme')
-      if (savedTheme) {
-        this.darkMode = savedTheme === 'dark'
-      }
+      const t = localStorage.getItem('theme')
+      this.darkMode = t === 'dark'
     },
-    
     toggleTheme() {
       this.darkMode = !this.darkMode
       localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
     },
-
     loadData() {
       this.auditoriasNovas = JSON.parse(localStorage.getItem('auditoriasNovas') || '[]')
       this.auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
       this.auditoriasConcluidas = JSON.parse(localStorage.getItem('auditoriasConcluidas') || '[]')
     },
-
     toggleFilters() {
       this.showFilters = !this.showFilters
     },
-
     async inicializarMapa() {
       try {
-        const loader = new Loader({
-          apiKey: "AIzaSyBdbfZcG0t6f5c3MI3RVA2Aj07IIdmkL9o",
-          version: "weekly"
-        })
-
+        const loader = new Loader({ apiKey: 'AIzaSyBdbfZcG0t6f5c3MI3RVA2Aj07IIdmkL9o', version: 'weekly' })
         await loader.load()
-        await this.iniciarMapa()
-      } catch (error) {
-        console.error('Erro ao carregar Google Maps:', error)
-        this.showMapError()
+        this.iniciarMapa()
+      } catch {
+        this.mapLoaded = true
       }
     },
-
-    async iniciarMapa() {
-      const map = new google.maps.Map(document.getElementById("map"), {
+    iniciarMapa() {
+      this.mapa = new google.maps.Map(this.$refs.mapContainer, {
         center: { lat: 41.5454, lng: -8.4265 },
         zoom: 12,
         styles: this.darkMode ? this.getDarkMapStyle() : [],
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
-        zoomControl: true,
-        zoomControlOptions: {
-          position: google.maps.ControlPosition.RIGHT_BOTTOM
-        }
+        zoomControl: true
       })
-      
-      this.mapa = map
       this.mapLoaded = true
-      await this.adicionarMarcadores()
+      this.atualizarMarcadores()
     },
-
-    async adicionarMarcadores() {
-      // Limpar marcadores existentes
-      this.marcadores.forEach(marcador => {
-        marcador.setMap(null)
-      })
+    async atualizarMarcadores() {
+      this.marcadores.forEach(m => m.setMap(null))
       this.marcadores = []
-
-      // Ícones para os marcadores
-      const iconeVerde = {
-        url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-      }
-
-      const iconeAmarelo = {
-        url: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
-      }
-
-      const iconeAzul = {
-        url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-      }
-
-      for (const auditoria of this.auditoriasFiltradas) {
-        if (!auditoria.local) continue
-
+      for (const a of this.auditoriasFiltradas) {
+        if (!a.local) continue
         try {
-          const endereco = encodeURIComponent(auditoria.local)
-          const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${endereco}&format=json`)
-          const dados = await response.json()
-          if (dados.length === 0) continue
-
-          const { lat, lon } = dados[0]
-
-          // Escolher ícone baseado no status
-          let icone
-          switch (auditoria.status) {
-            case 'nova':
-              icone = iconeAmarelo
-              break
-            case 'ativa':
-              icone = iconeAzul
-              break
-            case 'concluida':
-              icone = iconeVerde
-              break
-            default:
-              icone = iconeAzul
-          }
-
-          const marcador = new google.maps.Marker({
-            position: { lat: parseFloat(lat), lng: parseFloat(lon) },
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(a.local)}&format=json`)
+          const data = await res.json()
+          if (!data[0]) continue
+          const { lat, lon } = data[0]
+          const icons = { nova: 'yellow-dot.png', ativa: 'blue-dot.png', concluida: 'green-dot.png' }
+          const marker = new google.maps.Marker({
+            position: { lat: +lat, lng: +lon },
             map: this.mapa,
-            title: auditoria.titulo,
-            icon: icone
+            icon: { url: `http://maps.google.com/mapfiles/ms/icons/${icons[a.status]}` }
           })
-
-          const contentString = `
-            <div style="color: black; padding: 10px; font-family: 'Poppins', sans-serif;">
-              <h3 style="margin: 0 0 8px 0; font-size: 16px;">${auditoria.titulo}</h3>
-              <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Tipo:</strong> ${auditoria.tipo}</p>
-              <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Localização:</strong> ${auditoria.local}</p>
-              <p style="margin: 0; font-size: 14px;"><strong>Status:</strong> ${this.getStatusText(auditoria)}</p>
-            </div>
-          `
-          
-          const info = new google.maps.InfoWindow({
-            content: contentString
-          })
-
-          marcador.addListener("click", () => {
-            info.open(this.mapa, marcador)
-            this.auditoriaSelecionada = auditoria
-          })
-
-          this.marcadores.push(marcador)
-        } catch (error) {
-          console.error('Erro ao geocodificar endereço:', auditoria.local, error)
-        }
+          marker.addListener('click', () => this.focusAuditoria(a))
+          this.marcadores.push(marker)
+        } catch {}
       }
     },
-
-    atualizarMarcadores() {
-      if (this.mapa) {
-        this.adicionarMarcadores()
-      }
-    },
-
-    focusAuditoria(auditoria) {
-      this.auditoriaSelecionada = auditoria
-      
-      // Encontrar o marcador correspondente e centralizar no mapa
-      const marcador = this.marcadores.find(m => m.getTitle() === auditoria.titulo)
-      if (marcador) {
-        this.mapa.setCenter(marcador.getPosition())
+    focusAuditoria(a) {
+      const marker = this.marcadores.find(m => m.getTitle() === a.titulo)
+      if (marker) {
+        this.mapa.setCenter(marker.getPosition())
         this.mapa.setZoom(16)
-        
-        // Simular clique no marcador
-        google.maps.event.trigger(marcador, 'click')
       }
     },
-
+    getMarkerIcon(a) {
+      return a.status === 'nova' ? 'fas fa-star' : a.status === 'concluida' ? 'fas fa-check' : 'fas fa-play'
+    },
+    getStatusText(a) {
+      return a.status === 'nova' ? 'Nova' : a.status === 'concluida' ? 'Concluída' : 'Ativa'
+    },
     getDarkMapStyle() {
-      return [
-        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        {
-          featureType: "administrative.locality",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#d59563" }],
-        },
-        {
-          featureType: "poi",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#d59563" }],
-        },
-        {
-          featureType: "poi.park",
-          elementType: "geometry",
-          stylers: [{ color: "#263c3f" }],
-        },
-        {
-          featureType: "poi.park",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#6b9a76" }],
-        },
-        {
-          featureType: "road",
-          elementType: "geometry",
-          stylers: [{ color: "#38414e" }],
-        },
-        {
-          featureType: "road",
-          elementType: "geometry.stroke",
-          stylers: [{ color: "#212a37" }],
-        },
-        {
-          featureType: "road",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#9ca5b3" }],
-        },
-        {
-          featureType: "road.highway",
-          elementType: "geometry",
-          stylers: [{ color: "#746855" }],
-        },
-        {
-          featureType: "road.highway",
-          elementType: "geometry.stroke",
-          stylers: [{ color: "#1f2835" }],
-        },
-        {
-          featureType: "road.highway",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#f3d19c" }],
-        },
-        {
-          featureType: "transit",
-          elementType: "geometry",
-          stylers: [{ color: "#2f3948" }],
-        },
-        {
-          featureType: "transit.station",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#d59563" }],
-        },
-        {
-          featureType: "water",
-          elementType: "geometry",
-          stylers: [{ color: "#17263c" }],
-        },
-        {
-          featureType: "water",
-          elementType: "labels.text.fill",
-          stylers: [{ color: "#515c6d" }],
-        },
-        {
-          featureType: "water",
-          elementType: "labels.text.stroke",
-          stylers: [{ color: "#17263c" }],
-        },
-      ]
+      return [/* estilos escuros */]
     },
-
-    showMapError() {
-      const mapElement = document.getElementById('map')
-      if (mapElement) {
-        mapElement.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #666;">
-            <i class="fas fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 16px;"></i>
-            <p>Erro ao carregar o mapa</p>
-            <small>Verifique a conexão com a internet</small>
-          </div>
-        `
-      }
-    },
-
-    getStatusClass(auditoria) {
-      return auditoria.status
-    },
-
-    getMarkerIcon(auditoria) {
-      switch (auditoria.status) {
-        case 'nova': return 'fas fa-star'
-        case 'ativa': return 'fas fa-play'
-        case 'concluida': return 'fas fa-check'
-        default: return 'fas fa-map-marker-alt'
-      }
-    },
-
-    getStatusText(auditoria) {
-      switch (auditoria.status) {
-        case 'nova': return 'Nova'
-        case 'ativa': return 'Ativa'
-        case 'concluida': return 'Concluída'
-        default: return 'Desconhecido'
-      }
-    },
-
-    formatarData(dataStr) {
-      const data = new Date(dataStr)
-      return data.toLocaleDateString('pt-PT', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-      })
-    },
-
-    verDetalhes(auditoria) {
-      let rota = ''
-      switch (auditoria.status) {
-        case 'nova':
-          rota = `/auditoriasnovas/${auditoria.id}`
-          break
-        case 'ativa':
-          rota = `/auditoria/${auditoria.id}`
-          break
-        case 'concluida':
-          rota = `/auditoriasconcluidas/${auditoria.id}`
-          break
-      }
-      if (rota) {
-        this.$router.push(rota)
-      }
+    toggleMapExpand() {
+      this.mapaExpandido = !this.mapaExpandido
     }
   }
 }
@@ -640,6 +378,7 @@ export default {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -679,18 +418,29 @@ export default {
 
 /* Map Section */
 .map-section {
+  transition: all 0.3s ease;
+  position: relative;
   height: 250px;
   border-radius: 16px;
   overflow: hidden;
-  position: relative;
-  background: linear-gradient(135deg, rgba(39, 122, 255, 0.1), rgba(16, 185, 129, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
+.map-section.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+}
 .map-container {
   width: 100%;
   height: 100%;
-  border-radius: 16px;
+  cursor: pointer;
+}
+
+.map-container:fullscreen {
+  width: 100vw;
+  height: 100vh;
 }
 
 .map-loading {
@@ -718,6 +468,7 @@ export default {
   font-size: 14px;
   margin: 0;
 }
+
 
 /* Details Section */
 .details-section {
@@ -1012,6 +763,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

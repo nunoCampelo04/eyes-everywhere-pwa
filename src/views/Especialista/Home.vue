@@ -7,17 +7,12 @@
 
     <div class="page-container">
       <!-- Header com perfil do especialista -->
-      <div class="profile-header">
+      <div v-if="especialista.nome" class="profile-header">
         <div class="profile-info">
-          <div class="avatar-container">
-            <div class="avatar-ring">
-              <img :src="especialista.avatar || '../assets/user-icon.png'" :alt="especialista.nome" class="avatar" />
-            </div>
-            <div class="status-indicator online"></div>
-          </div>
+
           <div class="profile-details">
             <h2 class="profile-name">{{ especialista.nome }}</h2>
-            <p class="profile-area">{{ especialista.area || 'Especialista' }}</p>
+            <p class="profile-area">{{ especialista.especialidade || 'Especialista' }}</p>
             <div class="profile-stats">
               <span class="stat-item">
                 <i class="fas fa-tasks"></i>
@@ -31,6 +26,7 @@
         </button>
       </div>
 
+
       <!-- Estatísticas rápidas -->
       <div class="stats-container">
         <div class="stat-card pending">
@@ -42,7 +38,7 @@
             <span class="stat-label">Pendentes</span>
           </div>
         </div>
-        
+
         <div class="stat-card active">
           <div class="stat-icon">
             <i class="fas fa-play"></i>
@@ -52,7 +48,7 @@
             <span class="stat-label">Em Curso</span>
           </div>
         </div>
-        
+
         <div class="stat-card completed">
           <div class="stat-icon">
             <i class="fas fa-check"></i>
@@ -67,32 +63,19 @@
       <!-- Filtros -->
       <div class="filters-section">
         <div class="filter-tabs">
-          <button 
-            class="filter-tab" 
-            :class="{ active: filtroAtivo === 'todas' }"
-            @click="filtroAtivo = 'todas'"
-          >
+          <button class="filter-tab" :class="{ active: filtroAtivo === 'todas' }" @click="filtroAtivo = 'todas'">
             Todas
           </button>
-          <button 
-            class="filter-tab" 
-            :class="{ active: filtroAtivo === 'pendentes' }"
-            @click="filtroAtivo = 'pendentes'"
-          >
+          <button class="filter-tab" :class="{ active: filtroAtivo === 'pendentes' }"
+            @click="filtroAtivo = 'pendentes'">
             Pendentes
           </button>
-          <button 
-            class="filter-tab" 
-            :class="{ active: filtroAtivo === 'andamento' }"
-            @click="filtroAtivo = 'andamento'"
-          >
+          <button class="filter-tab" :class="{ active: filtroAtivo === 'andamento' }"
+            @click="filtroAtivo = 'andamento'">
             Em Curso
           </button>
-          <button 
-            class="filter-tab" 
-            :class="{ active: filtroAtivo === 'concluidas' }"
-            @click="filtroAtivo = 'concluidas'"
-          >
+          <button class="filter-tab" :class="{ active: filtroAtivo === 'concluidas' }"
+            @click="filtroAtivo = 'concluidas'">
             Concluídas
           </button>
         </div>
@@ -105,15 +88,10 @@
           <h3>Nenhuma auditoria encontrada</h3>
           <p>{{ getEmptyMessage() }}</p>
         </div>
-        
+
         <div v-else class="auditorias-list">
-          <div 
-            class="auditoria-card" 
-            v-for="auditoria in auditoriasFiltradas" 
-            :key="auditoria.id" 
-            :class="getAuditoriaStatusClass(auditoria)"
-             @click="$router.push('/detalhe/especialista/' + auditoria.id)"
-          >
+          <div class="auditoria-card" v-for="auditoria in auditoriasFiltradas" :key="auditoria.id"
+            :class="getAuditoriaStatusClass(auditoria)" @click="$router.push('/detalhe/especialista/' + auditoria.id)">
             <div class="auditoria-header">
               <div class="auditoria-date">
                 <span class="date-day">{{ formatarData(auditoria.data).dia }}</span>
@@ -126,7 +104,7 @@
                 </span>
               </div>
             </div>
-            
+
             <div class="auditoria-content">
               <h3 class="auditoria-title">{{ auditoria.titulo }}</h3>
               <div class="auditoria-details">
@@ -147,47 +125,35 @@
                   <span>Prioridade: {{ auditoria.prioridade }}</span>
                 </div>
               </div>
-              
+
               <!-- Ações rápidas -->
               <div class="auditoria-actions">
-                <button 
-                  v-if="auditoria.statusEspecialista === 'atribuida'"
-                  class="action-btn accept"
-                  @click.stop="aceitarAuditoria(auditoria)"
-                >
+                <button v-if="auditoria.statusEspecialista === 'atribuida'" class="action-btn accept"
+                  @click.stop="aceitarAuditoria(auditoria)">
                   <i class="fas fa-check"></i>
                   Aceitar
                 </button>
-                
-                <button 
-                  v-if="auditoria.statusEspecialista === 'aceite'"
-                  class="action-btn start"
-                  @click.stop="iniciarAuditoria(auditoria)"
-                >
+
+                <button v-if="auditoria.statusEspecialista === 'aceite'" class="action-btn start"
+                  @click.stop="iniciarAuditoria(auditoria)">
                   <i class="fas fa-play"></i>
                   Iniciar
                 </button>
-                
-                <button 
-                  v-if="auditoria.statusEspecialista === 'em_curso'"
-                  class="action-btn location"
-                  @click.stop="confirmarPresenca(auditoria)"
-                >
+
+                <button v-if="auditoria.statusEspecialista === 'em_curso'" class="action-btn location"
+                  @click.stop="confirmarPresenca(auditoria)">
                   <i class="fas fa-map-marker-alt"></i>
                   Confirmar Presença
                 </button>
-                
-                <button 
-                  v-if="auditoria.statusEspecialista === 'em_curso'"
-                  class="action-btn complete"
-                  @click.stop="finalizarAuditoria(auditoria)"
-                >
+
+                <button v-if="auditoria.statusEspecialista === 'em_curso'" class="action-btn complete"
+                  @click.stop="finalizarAuditoria(auditoria)">
                   <i class="fas fa-flag-checkered"></i>
                   Finalizar
                 </button>
               </div>
             </div>
-            
+
             <i class="fas fa-chevron-right auditoria-arrow"></i>
           </div>
         </div>
@@ -207,7 +173,7 @@ export default {
   components: { BottomNav },
   data() {
     return {
-      especialista: {},
+      especialista: { nome: '', avatar: '', especialidade: '' },
       auditoriasAtribuidas: [],
       filtroAtivo: 'todas',
       darkMode: true
@@ -217,15 +183,15 @@ export default {
     auditoriasPendentes() {
       return this.auditoriasAtribuidas.filter(a => a.statusEspecialista === 'atribuida')
     },
-    
+
     auditoriasEmAndamento() {
       return this.auditoriasAtribuidas.filter(a => ['aceite', 'em_curso'].includes(a.statusEspecialista))
     },
-    
+
     auditoriasConcluidas() {
       return this.auditoriasAtribuidas.filter(a => a.statusEspecialista === 'concluida')
     },
-    
+
     auditoriasFiltradas() {
       switch (this.filtroAtivo) {
         case 'pendentes':
@@ -250,7 +216,7 @@ export default {
         this.darkMode = savedTheme === 'dark'
       }
     },
-    
+
     toggleTheme() {
       this.darkMode = !this.darkMode
       localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
@@ -263,9 +229,9 @@ export default {
         this.$router.push('/')
         return
       }
-      
+
       this.especialista = user
-      
+
       // Carregar auditorias atribuídas a este especialista
       this.carregarAuditoriasAtribuidas()
     },
@@ -278,7 +244,7 @@ export default {
           titulo: "Inspeção de Sinalização Rodoviária",
           tipo: "Segurança Rodoviária",
           data: new Date().toISOString(),
-          local: "Rua de Santo António, Braga",
+          local: "Rua Francisco Pereira Coutinho, Braga",
           descricao: "Verificar placas e marcações no cruzamento principal.",
           prioridade: "Alta",
           statusEspecialista: "atribuida", // atribuida, aceite, em_curso, concluida
@@ -307,7 +273,7 @@ export default {
           especialistaId: this.especialista.id
         }
       ]
-      
+
       // Salvar no localStorage para persistência
       localStorage.setItem('auditoriasEspecialista', JSON.stringify(auditorias))
       this.auditoriasAtribuidas = auditorias
@@ -564,9 +530,12 @@ export default {
 }
 
 @keyframes pulse-ring {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -1100,6 +1069,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

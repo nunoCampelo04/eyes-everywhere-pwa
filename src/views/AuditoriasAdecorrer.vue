@@ -164,8 +164,10 @@ export default {
 .login-bg {
   background: var(--bg-primary);
   min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
+  padding-top: env(safe-area-inset-top);
+  padding-top: constant(safe-area-inset-top);
+
   justify-content: center;
   align-items: flex-start;
   position: relative;
@@ -219,7 +221,7 @@ export default {
   max-width: 400px;
   display: flex;
   flex-direction: column;
-  gap: 80px;
+  gap: 40px;
   position: relative;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -236,7 +238,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 8px;
+  margin-bottom: -18px;
 }
 
 .back-btn {
@@ -269,10 +271,9 @@ export default {
   text-align: center;
   flex: 1;
   display: flex;
-  justify-content: flex-start; 
+  justify-content: flex-start;
   align-items: center;
-  padding-left: 40px; 
-  margin-bottom: -60px; /* Ajuste para alinhar com o botão de voltar */
+  margin-right: auto;
 }
 
 /* Search */
@@ -367,7 +368,7 @@ export default {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  
+
 }
 
 .auditoria-card::before {

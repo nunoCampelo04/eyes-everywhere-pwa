@@ -164,11 +164,11 @@
 </template>
 
 <script>
-import BottomNav from './components/BottomNav.vue'
+import BottomNav from '../../components/BottomNav.vue'
 import { Loader } from "@googlemaps/js-api-loader"
 
 export default {
-  name: 'ConfirmacaoPresenca',
+  name: 'Presenca',
   components: { BottomNav },
   data() {
     return {
@@ -184,7 +184,7 @@ export default {
       marcadorUsuario: null,
       marcadorAuditoria: null,
       historicoConfirmacoes: [],
-      DISTANCIA_MAXIMA: 100 // metros
+      DISTANCIA_MAXIMA: 1000 // metros
     }
   },
   computed: {

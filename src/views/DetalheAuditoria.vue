@@ -1,25 +1,30 @@
 <template>
   <div class="login-bg" :class="{ 'light-mode': !darkMode }">
-    <!-- Toggle de tema no canto superior direito -->
+    <!-- Toggle de tema -->
     <button class="theme-toggle" @click="toggleTheme">
       <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
     </button>
 
-    <div class="page-container">
-      <!-- Header elegante -->
-      <div class="page-header">
+    <div class="detail-container">
+      <!-- Cabeçalho -->
+      <div class="detail-header">
         <button class="back-btn" @click="$router.back()">
           <i class="fas fa-arrow-left"></i>
         </button>
-        <h2 class="page-title">Detalhes da Auditoria</h2>
-        <button class="save-btn" @click="guardarAlteracoes" :disabled="!alteracoesPendentes">
-          <i class="fas fa-save"></i>
-        </button>
+        <h2 class="detail-title">Detalhes da Auditoria</h2>
+        <div class="header-actions">
+          <button class="header-btn save-btn" @click="guardarAlteracoes" :disabled="!alteracoesPendentes">
+            <i class="fas fa-save"></i>
+          </button>
+          <button v-if="auditoria.estado !== 'Concluída'" class="header-btn concluir-btn" @click="concluirAuditoria" title="Concluir Auditoria">
+            <i class="fas fa-check"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Status da auditoria -->
+      <!-- Status -->
       <div class="status-section">
-        <div class="status-badge active">
+        <div class="status-badge">
           <i class="fas fa-play"></i>
           <span>Em Progresso</span>
         </div>
@@ -27,79 +32,61 @@
 
       <!-- Tabs de categorias -->
       <div class="tabs" ref="tabsBar">
-        <button v-for="(tab, i) in tabs" :key="i" :class="{ active: activeTab === i }" @click="setActiveTab(i)"
-          ref="tabBtns">
+        <button
+          v-for="(tab, i) in tabs"
+          :key="i"
+          :class="{ active: activeTab === i }"
+          @click="setActiveTab(i)"
+          ref="tabBtns"
+        >
           <i :class="tab.icon"></i> {{ tab.label }}
         </button>
       </div>
 
-      <!-- Formulário dividido por categorias -->
+      <!-- Formulário -->
       <div class="form-section">
         <!-- GERAL -->
         <div v-show="activeTab === 0">
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-heading"></i>
-              Título
-            </label>
+            <label class="form-label"><i class="fas fa-heading"></i> Título</label>
             <input type="text" v-model="auditoria.titulo" class="form-input" @input="marcarAlteracoes" />
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-tag"></i>
-              Tipo
-            </label>
+            <label class="form-label"><i class="fas fa-tag"></i> Tipo</label>
             <select v-model="auditoria.tipo" class="form-select" @change="marcarAlteracoes">
-              <option value="Segurança Rodoviária">Segurança Rodoviária</option>
-              <option value="Infraestruturas">Infraestruturas</option>
-              <option value="Ambiente">Ambiente</option>
-              <option value="Urbanismo">Urbanismo</option>
+              <option>Segurança Rodoviária</option>
+              <option>Infraestruturas</option>
+              <option>Ambiente</option>
+              <option>Urbanismo</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-calendar"></i>
-              Data e Hora
-            </label>
+            <label class="form-label"><i class="fas fa-calendar"></i> Data e Hora</label>
             <input type="datetime-local" v-model="dataFormatada" class="form-input" @input="marcarAlteracoes" />
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-exclamation-triangle"></i>
-              Prioridade
-            </label>
+            <label class="form-label"><i class="fas fa-exclamation-triangle"></i> Prioridade</label>
             <select v-model="auditoria.prioridade" class="form-select" @change="marcarAlteracoes">
-              <option value="Baixa">Baixa</option>
-              <option value="Média">Média</option>
-              <option value="Alta">Alta</option>
-              <option value="Crítica">Crítica</option>
+              <option>Baixa</option>
+              <option>Média</option>
+              <option>Alta</option>
+              <option>Crítica</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-align-left"></i>
-              Descrição
-            </label>
-            <textarea v-model="auditoria.descricao" class="form-textarea" rows="4"
-              placeholder="Descreva os detalhes da auditoria..." @input="marcarAlteracoes"></textarea>
+            <label class="form-label"><i class="fas fa-align-left"></i> Descrição</label>
+            <textarea v-model="auditoria.descricao" class="form-textarea" rows="4" placeholder="Descreva os detalhes da auditoria..." @input="marcarAlteracoes"></textarea>
           </div>
         </div>
 
         <!-- LOCALIZAÇÃO -->
         <div v-show="activeTab === 1">
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-map-marker-alt"></i>
-              Localização
-            </label>
-            <input type="text" v-model="auditoria.local" class="form-input" placeholder="Endereço ou coordenadas"
-              @input="marcarAlteracoes" />
+            <label class="form-label"><i class="fas fa-map-marker-alt"></i> Localização</label>
+            <input type="text" v-model="auditoria.local" class="form-input" placeholder="Endereço ou coordenadas" @input="marcarAlteracoes" />
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-map"></i>
-              Mapa da Localização
-            </label>
+            <label class="form-label"><i class="fas fa-map"></i> Mapa da Localização</label>
             <div class="map-section">
               <div id="detailMap" class="map-container"></div>
               <div v-if="!mapLoaded" class="map-loading">
@@ -113,17 +100,13 @@
         <!-- RECURSOS -->
         <div v-show="activeTab === 2">
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-users"></i>
-              Especialistas
-            </label>
+            <label class="form-label"><i class="fas fa-users"></i> Especialistas</label>
             <div class="especialistas-selector">
               <div class="especialistas-disponiveis">
                 <h5>Disponíveis:</h5>
                 <div class="especialista-list">
-                  <div v-for="esp in especialistasDisponiveis" :key="esp.id" class="especialista-item"
-                    @click="adicionarEspecialista(esp)">
-                    <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar">
+                  <div v-for="esp in especialistasDisponiveis" :key="esp.id" class="especialista-item" @click="adicionarEspecialista(esp)">
+                    <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar" />
                     <span>{{ esp.nome }}</span>
                     <i class="fas fa-plus"></i>
                   </div>
@@ -132,9 +115,8 @@
               <div class="especialistas-selecionados">
                 <h5>Selecionados:</h5>
                 <div class="especialista-list">
-                  <div v-for="esp in especialistasSelecionados" :key="esp.id" class="especialista-item selected"
-                    @click="removerEspecialista(esp)">
-                    <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar">
+                  <div v-for="esp in especialistasSelecionados" :key="esp.id" class="especialista-item selected" @click="removerEspecialista(esp)">
+                    <img :src="esp.avatar" :alt="esp.nome" class="especialista-avatar" />
                     <span>{{ esp.nome }}</span>
                     <i class="fas fa-times"></i>
                   </div>
@@ -143,25 +125,17 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-tools"></i>
-              Materiais
-            </label>
-            <input type="text" v-model="auditoria.materiais" class="form-input" placeholder="Materiais necessários"
-              @input="marcarAlteracoes" />
+            <label class="form-label"><i class="fas fa-tools"></i> Materiais</label>
+            <input type="text" v-model="auditoria.materiais" class="form-input" placeholder="Materiais necessários" @input="marcarAlteracoes" />
           </div>
         </div>
 
         <!-- ANEXOS -->
         <div v-show="activeTab === 3">
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-file-alt"></i>
-              Documentos
-            </label>
+            <label class="form-label"><i class="fas fa-file-alt"></i> Documentos</label>
             <div class="documentos-section">
-              <input type="file" ref="fileInput" @change="anexarDocumento" multiple accept=".pdf,.doc,.docx,.jpg,.png"
-                style="display: none">
+              <input type="file" ref="fileInput" @change="anexarDocumento" multiple accept=".pdf,.doc,.docx,.jpg,.png" style="display: none">
               <button class="anexar-btn" @click="$refs.fileInput.click()">
                 <i class="fas fa-paperclip"></i>
                 <span>Anexar Documento</span>
@@ -181,37 +155,28 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-microphone"></i>
-              Gravação de Áudio
-            </label>
+            <label class="form-label"><i class="fas fa-microphone"></i> Gravação de Áudio</label>
             <div class="audio-section">
-              <div class="audio-controls">
-                <button class="audio-btn record" :class="{ recording: gravandoAudio }" @click="toggleGravacao">
-                  <i :class="gravandoAudio ? 'fas fa-stop' : 'fas fa-microphone'"></i>
-                  <span>{{ gravandoAudio ? 'Parar' : 'Gravar' }}</span>
-                </button>
-                <button v-if="audioGravado" class="audio-btn play" @click="reproduzirAudio">
-                  <i class="fas fa-play"></i>
-                  <span>Reproduzir</span>
-                </button>
-                <button v-if="audioGravado" class="audio-btn delete" @click="removerAudio">
-                  <i class="fas fa-trash"></i>
-                  <span>Remover</span>
-                </button>
-              </div>
-              <div v-if="audioGravado" class="audio-info">
-                <i class="fas fa-volume-up"></i>
-                <span>Áudio gravado ({{ formatarDuracao(audioGravado.duration) }})</span>
-              </div>
+              <button class="audio-btn record" :class="{ recording: gravandoAudio }" @click="toggleGravacao">
+                <i :class="gravandoAudio ? 'fas fa-stop' : 'fas fa-microphone'"></i>
+                <span>{{ gravandoAudio ? 'Parar' : 'Gravar' }}</span>
+              </button>
+              <button v-if="audioGravado" class="audio-btn play" @click="reproduzirAudio">
+                <i class="fas fa-play"></i>
+                <span>Reproduzir</span>
+              </button>
+              <button v-if="audioGravado" class="audio-btn delete" @click="removerAudio">
+                <i class="fas fa-trash"></i>
+                <span>Remover</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Bottom Navigation Component -->
-      <BottomNav />
     </div>
+
+    <!-- Bottom Navigation Component -->
+    <BottomNav />
   </div>
 </template>
 
@@ -821,7 +786,6 @@ export default {
 </script>
 
 <style scoped>
-/* Variáveis CSS para temas - IGUAIS AO LOGIN */
 :root {
   --bg-primary: #0a0f1a;
   --bg-secondary: #132340;
@@ -829,961 +793,272 @@ export default {
   --text-secondary: #aad1ff;
   --accent-primary: #277AFF;
   --accent-secondary: #00aaff;
-  --success-primary: #10b981;
-  --success-secondary: #059669;
-  --danger-primary: #ef4444;
-  --danger-secondary: #dc2626;
+  --input-bg: #dce4f7;
+  --input-text: #333;
 }
-
 .light-mode {
-  --bg-primary: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --text-primary: #333333;
   --text-secondary: #666666;
   --accent-primary: #277AFF;
   --accent-secondary: #00aaff;
-  --success-primary: #10b981;
-  --success-secondary: #059669;
-  --danger-primary: #ef4444;
-  --danger-secondary: #dc2626;
+  --input-bg: #f8f9fa;
+  --input-text: #333;
 }
 
-/* Background principal - IGUAL AO LOGIN */
+/* Container principal */
 .login-bg {
-  background: var(--bg-primary);
+  background: #ffffff;
   min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch; /* <-- IMPORTANTE! */
-  position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  transition: all 0.5s ease;
+  justify-content: center;
+  align-items: flex-start;
   padding: 10px;
+  padding-bottom: 80px;
+  position: relative;
+  transition: all 0.5s ease;
 }
-
 .login-bg::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(39, 122, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  inset: 0;
+  background-image: none;
   pointer-events: none;
 }
 
-/* Toggle de tema - IGUAL AO LOGIN */
+/* Toggle de tema */
 .theme-toggle {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
   border: none;
   border-radius: 50%;
   width: 45px;
   height: 45px;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
   z-index: 10;
 }
-
 .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.2);
   transform: scale(1.1);
 }
 
-/* Container principal - IGUAL AO LOGIN */
-.page-container {
+/* Container detalhes */
+.detail-container {
   background: var(--bg-secondary);
-  padding: 24px 20px; 
+  padding: 24px 20px;
   border-radius: 20px;
   width: 100%;
   max-width: 400px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  position: relative;
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.5s ease;
-  margin-top: 20px;
-  margin-bottom: 80px; 
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: slideUp 0.6s ease-out;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Header */
-.page-header {
+/* Cabeçalho */
+.detail-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 12px;
 }
-
-.back-btn,
-.save-btn {
+.detail-title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.back-btn, .header-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-}
-
-.back-btn:hover {
-  background: var(--accent-primary);
-  color: white;
-  transform: scale(1.05);
-}
-
-.save-btn:hover:not(:disabled) {
-  background: var(--success-primary);
-  color: white;
-  transform: scale(1.05);
-}
-
-.save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-title {
+  cursor: pointer;
   color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+}
+.back-btn:hover, .header-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
 }
 
+/* Status */
+.status-section {
+  text-align: center;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-primary);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+/* Tabs */
 .tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
   overflow-x: auto;
 }
-
 .tabs button {
-  flex: 1;
-  padding: 10px 8px;
-  border: none;
-  background: var(--bg-secondary);
+  background: var(--input-bg);
   color: var(--text-secondary);
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  white-space: nowrap;
   transition: all 0.2s;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 90px;
 }
-
 .tabs button.active {
-  color: var(--accent-primary);
-  border-bottom: 2px solid var(--accent-primary);
-  background: rgba(39, 122, 255, 0.05);
-}
-
-/* Status Section */
-.status-section {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.status-badge {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(39, 122, 255, 0.3);
-}
-
-.status-badge.active {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-}
-
-/* Form Section */
-.form-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-label {
-  font-size: 14px;
-  font-weight: 600;
+  background: var(--accent-primary);
   color: var(--text-primary);
+}
+
+/* Formulário */
+.form-group {
+  margin-bottom: 16px;
+}
+.form-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
 }
-
-.form-label i {
-  font-size: 12px;
-  color: var(--accent-primary);
-  width: 16px;
-}
-
 .form-input,
 .form-select,
 .form-textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px 16px;
+  width: 100%;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
   font-size: 14px;
-  color: var(--text-primary);
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
-  resize: none;
+  transition: box-shadow 0.2s;
 }
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.7;
-}
-
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(39, 122, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(39,122,255,0.2);
 }
 
-.form-select {
-  cursor: pointer;
+/* Map Section */
+.map-section {
+  position: relative;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
 }
-
-.form-textarea {
-  min-height: 80px;
-  line-height: 1.5;
-}
-
-/* Especialistas Selector */
-.especialistas-selector {
+.map-loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
 }
 
-.especialistas-disponiveis h5,
-.especialistas-selecionados h5 {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
-  text-transform: uppercase;
-}
-
+/* Especialistas */
 .especialista-list {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.especialista-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.especialista-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--accent-primary);
-}
-
-.especialista-item.selected {
-  background: rgba(39, 122, 255, 0.1);
-  border-color: var(--accent-primary);
-}
-
-.especialista-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-/* Documentos Section */
-.documentos-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.anexar-btn {
-  background: rgba(39, 122, 255, 0.1);
-  border: 1px solid rgba(39, 122, 255, 0.3);
-  border-radius: 8px;
-  padding: 12px;
-  color: var(--accent-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 600;
-}
-
-.anexar-btn:hover {
-  background: rgba(39, 122, 255, 0.2);
-  border-color: var(--accent-primary);
-}
-
-.documentos-anexados {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.documento-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-}
-
-.documento-nome {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.ver-documento,
-.remover-documento {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-}
-
-.ver-documento {
-  background: rgba(39, 122, 255, 0.2);
-  color: var(--accent-primary);
-}
-
-.remover-documento {
-  background: rgba(239, 68, 68, 0.2);
-  color: var(--danger-primary);
-}
-
-/* Audio Section */
-.audio-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.audio-controls {
-  display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
-
-.audio-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.especialista-item {
+  background: var(tex);
+  border: 1px solid rgba(0, 0, 0, 0.984);
   border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.audio-btn.record {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: var(--danger-primary);
-}
-
-.audio-btn.record.recording {
-  background: var(--danger-primary);
-  color: white;
-  animation: pulse 1s infinite;
-}
-
-.audio-btn.play {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--success-primary);
-}
-
-.audio-btn.delete {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: var(--danger-primary);
-}
-
-.audio-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  padding: 8px 12px;
-  background: rgba(16, 185, 129, 0.1);
-  border-radius: 8px;
-}
-
-/* Actions Section */
-.actions-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.action-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s;
+}
+.especialista-item:hover {
+  box-shadow: 0 2px 8px solid rgba(0, 0, 0, 0.984);
+}
+.especialista-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.especialista-item span {
+  color: var(--text-primary); 
+}
+.especialista-item i.fa-plus {
+  color: black;  
+}
+h5 {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
-.action-btn.complete {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--success-primary);
+/* Anexos */
+.anexar-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-primary);
 }
-
-.action-btn.complete:hover {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: var(--success-primary);
+.anexar-btn:hover {
+  background: rgba(255,255,255,0.1);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.action-btn.danger {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: var(--danger-primary);
-}
-
-.action-btn.danger:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: var(--danger-primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* Responsividade */
 @media (max-width: 480px) {
-  .login-bg {
-    padding: 5px; 
-  }
-  .page-container {
-    padding: 16px 8px; 
+  .detail-container {
+    padding: 16px;
     border-radius: 16px;
     max-width: 100%;
-    margin-top: 10px;
-    margin-bottom: 70px; 
   }
-
   .theme-toggle {
     width: 35px;
     height: 35px;
     top: 10px;
     right: 10px;
-    font-size: 14px;
   }
-
-  .page-title {
-    font-size: 16px;
-  }
-
-  .form-input,
-  .form-select,
-  .form-textarea {
-    padding: 10px 14px;
-  }
-
-  .action-btn {
-    padding: 14px;
-    font-size: 15px;
-  }
-}
-
-/* Animação de entrada */
-.page-container {
-  animation: slideUp 0.6s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Map Section */
-.map-section {
-  height: 200px;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  background: linear-gradient(135deg, rgba(39, 122, 255, 0.1), rgba(16, 185, 129, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.map-container {
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-}
-
-.map-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(19, 35, 64, 0.9);
-  color: var(--text-secondary);
-  z-index: 1;
-}
-
-.map-loading i {
-  font-size: 20px;
-  margin-bottom: 8px;
-  color: var(--accent-primary);
-}
-
-.map-loading p {
-  font-size: 12px;
-  margin: 0;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-  padding: 20px;
-}
-
-.modal-container {
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-.modal-container.modal-large {
-  max-width: 90vw;
-  max-height: 90vh;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.modal-title-section {
-  flex: 1;
-}
-
-.modal-title {
-  color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  font-family: 'Poppins', sans-serif;
-}
-
-.modal-subtitle {
-  color: var(--text-secondary);
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.modal-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.modal-nav-btn,
-.modal-action-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.modal-nav-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-}
-
-.modal-nav-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--text-primary);
-}
-
-.modal-nav-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.modal-action-btn.download {
-  background: rgba(39, 122, 255, 0.2);
-  color: var(--accent-primary);
-}
-
-.modal-action-btn.download:hover {
-  background: rgba(39, 122, 255, 0.3);
-}
-
-.modal-action-btn.close {
-  background: rgba(239, 68, 68, 0.2);
-  color: var(--danger-primary);
-}
-
-.modal-action-btn.close:hover {
-  background: rgba(239, 68, 68, 0.3);
-}
-
-.modal-counter {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 0 8px;
-}
-
-.modal-content {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.document-viewer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Image Viewer */
-.image-viewer {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  position: relative;
-  overflow: auto;
-}
-
-.document-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.3s ease;
-  cursor: grab;
-}
-
-.document-image:active {
-  cursor: grabbing;
-}
-
-.image-controls {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.image-control-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-}
-
-.image-control-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* PDF Viewer */
-.pdf-viewer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.pdf-frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: white;
-}
-
-.pdf-fallback {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.pdf-fallback i {
-  font-size: 48px;
-  color: var(--danger-primary);
-  margin-bottom: 16px;
-}
-
-/* Text Viewer */
-.text-viewer {
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-}
-
-.text-content {
-  color: var(--text-primary);
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* File Preview */
-.file-preview {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  text-align: center;
-}
-
-.file-icon-large {
-  font-size: 64px;
-  color: var(--accent-primary);
-  margin-bottom: 20px;
-}
-
-.file-info h4 {
-  color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  font-family: 'Poppins', sans-serif;
-}
-
-.file-type {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin: 0 0 4px 0;
-}
-
-.file-size {
-  color: var(--text-secondary);
-  font-size: 12px;
-  margin: 0 0 20px 0;
-  opacity: 0.8;
-}
-
-.preview-download-btn {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Poppins', sans-serif;
-}
-
-.preview-download-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(39, 122, 255, 0.4);
-}
-
-/* Responsividade do Modal */
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 10px;
-  }
-
-  .modal-container {
-    width: 95%;
-    max-height: 85vh;
-  }
-
-  .modal-container.modal-large {
-    max-width: 95vw;
-    max-height: 85vh;
-  }
-
-  .modal-header {
-    padding: 16px;
-  }
-
-  .modal-title {
-    font-size: 16px;
-  }
-
-  .modal-controls {
-    gap: 6px;
-  }
-
-  .modal-nav-btn,
-  .modal-action-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 12px;
-  }
-
-  .image-controls {
-    bottom: 10px;
-    padding: 6px;
-    gap: 6px;
-  }
-
-  .image-control-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 10px;
+  .tabs button {
+    padding: 6px 10px;
+    font-size: 13px;
   }
 }
 </style>

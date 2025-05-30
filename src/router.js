@@ -4,7 +4,6 @@ import HomeView from './views/HomeView.vue'
 import AuditoriasAdecorrer from './views/AuditoriasAdecorrer.vue'
 import AuditoriasConcluidas from './views/AuditoriasConcluidas.vue'
 import NovaAuditoria from './views/NovaAuditoria.vue'
-import GerirEspecialistas from './views/GerirEspecialistas.vue'
 import Mapa from './views/MapaAuditorias.vue'
 import Pedidos from './views/Pedidos.vue'
 import Perfil from './views/Perfil.vue'
@@ -17,6 +16,7 @@ import EspecialistaDashboard from './views/Especialista/EspecialistaDashboard.vu
 import VerEspecialistas from './views/VerEspecialistas.vue'
 import Home from './views/Especialista/Home.vue'
 import Detalhe from './views/Especialista/Detalhe.vue'
+import Presenca from './views/Especialista/Presenca.vue'
 
 const routes = [
   { path: '/', component: LoginView },
@@ -24,7 +24,6 @@ const routes = [
   { path: '/auditorias/adecorrer', component: AuditoriasAdecorrer },
   { path: '/auditorias/concluidas', component: AuditoriasConcluidas },
   { path: '/auditorias/nova', component: NovaAuditoria },
-  { path: '/especialistas', component: GerirEspecialistas },
   { path: '/mapa', component: MapaAuditorias },
   { path: '/pedidos', component: Pedidos },
   { path: '/perfil', component: Perfil },
@@ -37,7 +36,8 @@ const routes = [
   { path: '/especialista/dashboard', component: EspecialistaDashboard },
   {path: '/especialistas/ver', component: VerEspecialistas },
   {path: '/home/especialista', component: Home },
-  {path:'/detalhe/especialista/:id', component: Detalhe }
+  {path:'/detalhe/especialista/:id', component: Detalhe },
+  {path:'/especialista/confirmar-presenca/:id', component: Presenca }
 ]
 
 const router = createRouter({

@@ -18,12 +18,7 @@
       <div class="search-container">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
-            v-model="pesquisa" 
-            placeholder="Procurar auditorias..." 
-            class="search-input"
-          />
+          <input type="text" v-model="pesquisa" placeholder="Procurar auditorias..." class="search-input" />
         </div>
       </div>
 
@@ -34,14 +29,10 @@
           <h3>Nenhuma auditoria nova</h3>
           <p>Novas auditorias para revisar aparecerão aqui</p>
         </div>
-        
+
         <div v-else class="auditorias-list">
-          <div 
-            class="auditoria-card new" 
-            v-for="aud in auditoriasFiltradas" 
-            :key="aud.id" 
-            @click="$router.push(`/auditoriasnovas/${aud.id}`)"
-          >
+          <div class="auditoria-card new" v-for="aud in auditoriasFiltradas" :key="aud.id"
+            @click="$router.push(`/auditoriasnovas/${aud.id}`)">
             <div class="auditoria-date new-date">
               <span class="date-day">{{ formatarData(aud.data).dia }}</span>
               <span class="date-month">{{ formatarData(aud.data).mes }}</span>
@@ -103,7 +94,7 @@ export default {
         this.darkMode = savedTheme === 'dark'
       }
     },
-    
+
     toggleTheme() {
       this.darkMode = !this.darkMode
       localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
@@ -164,7 +155,7 @@ export default {
 }
 
 .light-mode {
-  --bg-primary: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --text-primary: #333333;
   --text-secondary: #666666;
@@ -280,6 +271,7 @@ export default {
   font-weight: 600;
   margin: 0;
   font-family: 'Poppins', sans-serif;
+  margin-right: auto;
 }
 
 /* Search */
@@ -571,6 +563,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

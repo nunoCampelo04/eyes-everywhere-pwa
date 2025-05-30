@@ -182,7 +182,9 @@ export default {
           email: "nuno@mail.com",
           password: "1234",
           name: "Nuno Campelo",
-          avatar: "nuno.jpg"
+          avatar: "nuno.jpg",
+          numero: "912345678",
+          local: "Rua do Sol, 45, Porto",
         },
         {
           id: 2,
