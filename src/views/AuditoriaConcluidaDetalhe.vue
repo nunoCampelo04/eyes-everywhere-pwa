@@ -32,7 +32,7 @@
       <div class="info-section">
         <div class="info-card">
           <div class="info-header">
-            <h3 class="info-title">{{ auditoria.titulo }}</h3>
+            <h3 class="info-title">{{ auditoria.nome }}</h3>
             <span class="info-type completed">{{ auditoria.tipo }}</span>
           </div>
           
@@ -445,7 +445,7 @@ export default {
     exportarRelatorio() {
       // Simular exportação
       const dados = {
-        titulo: this.auditoria.titulo,
+        titulo: this.auditoria.nome,
         tipo: this.auditoria.tipo,
         data: this.formatarDataCompleta(this.auditoria.data),
         local: this.auditoria.local,
@@ -685,13 +685,13 @@ export default {
         this.marcador = new window.google.maps.Marker({
           position: { lat: parseFloat(lat), lng: parseFloat(lon) },
           map: this.mapa,
-          title: this.auditoria.titulo,
+          title: this.auditoria.nome,
           icon: iconeVerde
         })
 
         const contentString = `
           <div style="color: black; padding: 10px; font-family: 'Poppins', sans-serif;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px;">${this.auditoria.titulo}</h3>
+            <h3 style="margin: 0 0 8px 0; font-size: 16px;">${this.auditoria.nome}</h3>
             <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Tipo:</strong> ${this.auditoria.tipo}</p>
             <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Localização:</strong> ${this.auditoria.local}</p>
             <p style="margin: 0; font-size: 14px;"><strong>Status:</strong> Concluída</p>

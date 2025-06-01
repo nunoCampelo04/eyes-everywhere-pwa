@@ -38,7 +38,7 @@
               <span class="date-month">{{ formatarData(aud.data).mes }}</span>
             </div>
             <div class="auditoria-content">
-              <h3 class="auditoria-title">{{ aud.titulo }}</h3>
+              <h3 class="auditoria-title">{{ aud.nome }}</h3>
               <div class="auditoria-details">
                 <p class="auditoria-time">
                   <i class="fas fa-clock"></i>
@@ -78,7 +78,7 @@ export default {
   computed: {
     auditoriasFiltradas() {
       return this.auditorias.filter((a) =>
-        a.titulo.toLowerCase().includes(this.pesquisa.toLowerCase())
+        a.nome.toLowerCase().includes(this.pesquisa.toLowerCase())
       )
     }
   },
@@ -100,27 +100,8 @@ export default {
     },
 
     loadData() {
-      const armazenadas = localStorage.getItem('auditorias')
+      const armazenadas = localStorage.getItem('auditoriasADECORRER')
       let lista = armazenadas ? JSON.parse(armazenadas) : []
-
-      if (!lista.length) {
-        lista = [
-          {
-            id: 1,
-            titulo: "Inspeção de Sinalização",
-            tipo: "Segurança Rodoviária",
-            data: new Date().toISOString(),
-            local: "Rua de Santo António, Braga",
-            descricao: "Verificar placas e marcações no cruzamento.",
-            documentos: "",
-            prioridade: "Alta",
-            especialistas: [],
-            materiais: "",
-            origem: "Pedido da Câmara"
-          }
-        ]
-        localStorage.setItem('auditorias', JSON.stringify(lista))
-      }
 
       this.auditorias = lista
     },

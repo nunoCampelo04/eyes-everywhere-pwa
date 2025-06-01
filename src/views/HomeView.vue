@@ -11,11 +11,11 @@
         <div class="user-welcome">
           <div class="avatar-container">
             <div class="avatar-ring">
-              <img :src="`../assets/${user.avatar}`" :alt="user.name" class="avatar" />
+              <img :src="user.avatar" class="avatar" />
             </div>
           </div>
           <div class="welcome-content">
-            <h2 class="welcome-text">Olá, {{ user.name }}</h2>
+            <h2 class="welcome-text">Olá, {{ user.nomeCompleto }}</h2>
             <p class="subtitle">{{ currentDate }}</p>
           </div>
         </div>
@@ -159,12 +159,12 @@ export default {
         this.user = JSON.parse(savedUser)
       }
 
-      const auditoriasNovas = localStorage.getItem('auditoriasNovas')
+      const auditoriasNovas = localStorage.getItem('auditorias')
       if (auditoriasNovas) {
         this.auditoriasNovas = JSON.parse(auditoriasNovas)
       }
 
-      const auditorias = localStorage.getItem('auditorias')
+      const auditorias = localStorage.getItem('auditoriasADECORRER')
       if (auditorias) {
         this.auditorias = JSON.parse(auditorias)
       }

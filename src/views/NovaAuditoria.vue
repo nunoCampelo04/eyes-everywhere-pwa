@@ -39,7 +39,9 @@
               <i class="fas fa-star new-badge"></i>
             </div>
             <div class="auditoria-content">
-              <h3 class="auditoria-title">{{ aud.titulo }}</h3>
+              <h3 class="auditoria-title">
+                {{ aud.titulo || aud.nome || 'Sem título' }}
+              </h3>
               <div class="auditoria-details">
                 <p class="auditoria-time">
                   <i class="fas fa-clock"></i>
@@ -73,69 +75,80 @@ export default {
     return {
       auditorias: [],
       pesquisa: '',
-      darkMode: true
+      darkMode: true,
+      userId: null
     }
   },
   computed: {
     auditoriasFiltradas() {
-      return this.auditorias.filter((a) =>
-        a.titulo.toLowerCase().includes(this.pesquisa.toLowerCase())
-      )
+      // Pesquisa por título ou nome
+      return this.auditorias.filter((a) => {
+        const texto =
+          (a.titulo || '') +
+          ' ' +
+          (a.nome || '') +
+          ' ' +
+          (a.descricao || '');
+        return texto.toLowerCase().includes(this.pesquisa.toLowerCase());
+      });
     }
   },
   mounted() {
-    this.loadTheme()
-    this.loadData()
+    this.$root.atualizarAuditoriasNovas();
+    this.loadTheme();
+    this.loadUserId();
+    this.loadData();
   },
   methods: {
     loadTheme() {
-      const savedTheme = localStorage.getItem('theme')
+      const savedTheme = localStorage.getItem('theme');
       if (savedTheme) {
-        this.darkMode = savedTheme === 'dark'
+        this.darkMode = savedTheme === 'dark';
       }
     },
 
     toggleTheme() {
-      this.darkMode = !this.darkMode
-      localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
+      this.darkMode = !this.darkMode;
+      localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+    },
+
+    loadUserId() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      this.userId = user.id || user.ID || null;
     },
 
     loadData() {
-      const armazenadas = localStorage.getItem('auditoriasNovas')
-      let lista = armazenadas ? JSON.parse(armazenadas) : []
-
-      if (!lista.length) {
-        lista = [
-          {
-            id: 1,
-            titulo: "Inspeção de Sinalização",
-            tipo: "Segurança Rodoviária",
-            data: new Date().toISOString(),
-            local: "Rua de Santo António, Braga",
-            descricao: "Verificar placas e marcações no cruzamento.",
-            documentos: "",
-            prioridade: "Alta",
-            especialistas: [],
-            materiais: "",
-            origem: "Pedido da Câmara"
-          }
-        ]
-        localStorage.setItem('auditoriasNovas', JSON.stringify(lista))
-      }
-
-      this.auditorias = lista
+      // Vai buscar todas as auditorias do sistema
+      const todas = JSON.parse(localStorage.getItem('auditorias') || '[]');
+      // Só as do user logado
+      let lista = todas.filter(
+        (aud) =>
+          aud.auditores &&
+          Array.isArray(aud.auditores) &&
+          aud.auditores.includes(this.userId)
+      );
+      // Garante sempre título para mostrar
+      lista = lista.map((aud) => ({
+        ...aud,
+        titulo: aud.titulo || aud.nome || 'Sem título'
+      }));
+      this.auditorias = lista;
     },
 
     formatarData(dataStr) {
-      const data = new Date(dataStr)
-      const dia = data.getDate().toString().padStart(2, '0')
-      const mes = data.toLocaleString('pt-PT', { month: 'short' }).toUpperCase()
-      return { dia, mes }
+      const data = new Date(dataStr);
+      const dia = data.getDate().toString().padStart(2, '0');
+      const mes = data.toLocaleString('pt-PT', { month: 'short' }).toUpperCase();
+      return { dia, mes };
     },
 
     formatarHora(dataStr) {
-      const data = new Date(dataStr)
-      return `${data.getHours().toString().padStart(2, '0')}:${data.getMinutes().toString().padStart(2, '0')}`
+      const data = new Date(dataStr);
+      return (
+        data.getHours().toString().padStart(2, '0') +
+        ':' +
+        data.getMinutes().toString().padStart(2, '0')
+      );
     }
   }
 }

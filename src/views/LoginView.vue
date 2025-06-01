@@ -90,143 +90,97 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'LoginView',
-  data() {
-    return {
-      email: '',
-      password: '',
-      tipoLogin: 'gestor',
-      gsiInitiated: false,
-      isLoading: false,
-      darkMode: true
-    }
-  },
-  mounted() {
-    // Carregar Google Sign-In
-    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-      const script = document.createElement('script');
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { auth, provider, signInWithPopup } from '../firebase'
 
-    // Carregar preferência de tema
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      this.darkMode = savedTheme === 'dark';
-    }
-  },
-  methods: {
-    async login() {
-      this.isLoading = true;
+const email = ref('')
+const password = ref('')
+const tipoLogin = ref('gestor')
+const isLoading = ref(false)
+const darkMode = ref(true)
+const router = useRouter()
 
-      // Simular delay para mostrar loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
+// Theme
+const toggleTheme = () => {
+  darkMode.value = !darkMode.value
+  localStorage.setItem('theme', darkMode.value ? 'dark' : 'light')
+}
 
-      try {
-        if (this.tipoLogin === 'gestor') {
-          const utilizadores = JSON.parse(localStorage.getItem('utilizadores') || '[]')
-          const encontrado = utilizadores.find(u => u.email === this.email && u.password === this.password)
-          if (encontrado) {
-            localStorage.setItem('user', JSON.stringify({ ...encontrado, tipo: 'gestor' }))
-            this.$router.push('/home')
-          } else {
-            this.showError('Email ou password incorretos.')
-          }
-        } else {
-          const especialistas = JSON.parse(localStorage.getItem('especialistas') || '[]')
-          const encontrado = especialistas.find(e => e.email === this.email && e.password === this.password)
-          if (encontrado) {
-            localStorage.setItem('user', JSON.stringify({ ...encontrado, tipo: 'especialista' }))
-            this.$router.push('/home/especialista')
-          } else {
-            this.showError('Email ou password incorretos para especialista.')
-          }
-        }
-      } catch (error) {
-        this.showError('Erro ao fazer login. Tenta novamente.')
-      } finally {
-        this.isLoading = false;
-      }
-    },
+const getParticleStyle = (index) => {
+  const styles = [
+    { top: '10%', left: '10%', animationDelay: '0s' },
+    { top: '20%', right: '15%', animationDelay: '2s' },
+    { top: '60%', left: '5%', animationDelay: '4s' },
+    { bottom: '20%', right: '10%', animationDelay: '1s' },
+    { bottom: '10%', left: '20%', animationDelay: '3s' },
+    { top: '40%', right: '5%', animationDelay: '5s' }
+  ]
+  return styles[index - 1] || {}
+}
 
-    async loginGoogle() {
-      const CLIENT_ID = '923337894805-hqp870l246llpistk0m9pghbqat9vpgk.apps.googleusercontent.com';
 
-      if (!window.google || !window.google.accounts || !window.google.accounts.id) {
-        this.showError('O Google Sign-In ainda está a carregar...');
-        return;
-      }
-
-      if (!this.gsiInitiated) {
-        this.gsiInitiated = true;
-        window.google.accounts.id.initialize({
-          client_id: CLIENT_ID,
-          callback: this.handleGoogleResponse
-        });
-      }
-
-      window.google.accounts.id.prompt();
-    },
-
-    handleGoogleResponse(response) {
-      if (!response.credential) {
-        this.showError("Erro ao autenticar com Google.");
-        return;
-      }
-
-      const token = response.credential;
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const email = payload.email;
-      const nome = payload.name || email;
-
-      const utilizadorGoogle = {
-        nome,
-        email,
-        avatar: payload.picture || "",
-        metodo: "google",
-        tipo: this.tipoLogin
-      };
-
-      localStorage.setItem("user", JSON.stringify(utilizadorGoogle));
-
-      if (this.tipoLogin === 'gestor') {
-        this.$router.push("/home");
+const login = async () => {
+  isLoading.value = true
+  await new Promise(r => setTimeout(r, 1000))
+  try {
+    if (tipoLogin.value === 'gestor') {
+      const utilizadores = JSON.parse(localStorage.getItem('utilizadores') || '[]')
+      const encontrado = utilizadores.find(u => u.email === email.value && u.password === password.value)
+      if (encontrado) {
+        localStorage.setItem('user', JSON.stringify({ ...encontrado, tipo: 'gestor' }))
+        router.push('/home')
       } else {
-        this.$router.push("/especialista/dashboard");
+        alert('Email ou password incorretos.')
       }
-    },
-
-    toggleTheme() {
-      this.darkMode = !this.darkMode;
-      localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
-    },
-
-    showForgotPassword() {
-      alert('Funcionalidade de recuperação de password em desenvolvimento.');
-    },
-
-    showError(message) {
-      alert(message);
-    },
-
-    getParticleStyle(index) {
-      const positions = [
-        { top: '10%', left: '10%', animationDelay: '0s' },
-        { top: '20%', right: '15%', animationDelay: '2s' },
-        { top: '60%', left: '5%', animationDelay: '4s' },
-        { bottom: '20%', right: '10%', animationDelay: '1s' },
-        { bottom: '10%', left: '20%', animationDelay: '3s' },
-        { top: '40%', right: '5%', animationDelay: '5s' }
-      ];
-      return positions[index - 1] || {};
+    } else {
+      const especialistas = JSON.parse(localStorage.getItem('especialistas') || '[]')
+      const encontrado = especialistas.find(e => e.email === email.value && e.password === password.value)
+      if (encontrado) {
+        localStorage.setItem('user', JSON.stringify({ ...encontrado, tipo: 'especialista' }))
+        router.push('/home/especialista')
+      } else {
+        alert('Email ou password incorretos para especialista.')
+      }
     }
+  } catch (error) {
+    alert('Erro ao fazer login. Tenta novamente.')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const loginGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider)
+    const user = result.user
+    console.log('User autenticado:', user)
+
+    const emailGoogle = user.email
+
+    // Procurar em auditores
+    const auditoresStr = localStorage.getItem('auditores') || '[]'
+    const auditores = JSON.parse(auditoresStr)
+    const auditor = auditores.find(a => a.email === emailGoogle)
+    if (!auditor) {
+      alert('Este email não está registado como auditor no sistema.')
+      return
+    }
+    const utilizadorAutenticado = {
+      ...auditor,
+      email: emailGoogle,
+      avatar: user.photoURL || '',
+      metodo: 'google'
+    }
+    localStorage.setItem('user', JSON.stringify(utilizadorAutenticado))
+    router.push('/home')
+  } catch (e) {
+    alert('Erro ao autenticar com Google.')
   }
 }
 </script>
+
 
 <style scoped>
 /* Variáveis CSS para temas */

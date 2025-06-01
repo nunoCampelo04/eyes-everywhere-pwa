@@ -1,6 +1,5 @@
 <template>
   <div class="login-bg" :class="{ 'light-mode': !darkMode }">
-    <!-- Toggle de tema no canto superior direito -->
     <button class="theme-toggle" @click="toggleTheme">
       <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
     </button>
@@ -21,52 +20,41 @@
       <div class="profile-section">
         <div class="avatar-container">
           <div class="avatar-ring">
-            <img :src="`../assets/${user.avatar}`" :alt="user.name" class="avatar" />
+            <img :src="user.avatar" class="avatar" />
           </div>
         </div>
-        <h2 class="user-name">{{ user.name }}</h2>
-        <p class="user-role">{{ user.area || 'Gestor' }}</p>
+        <h2 class="user-name">{{ user.nomeCompleto || user.name || 'Utilizador' }}</h2>
+        <p class="user-role">{{ user.area || user.localidade || 'Especialista' }}</p>
       </div>
 
       <!-- Informações detalhadas -->
       <div class="info-section">
         <div class="info-item">
-          <div class="info-icon">
-            <i class="fas fa-id-badge"></i>
-          </div>
+          <div class="info-icon"><i class="fas fa-id-badge"></i></div>
           <div class="info-content">
             <span class="info-label">Número</span>
-            <span class="info-value">{{ user.numero || 'Não definido' }}</span>
+            <span class="info-value">{{ user.numero || user.id || 'Não definido' }}</span>
           </div>
         </div>
-
         <div class="info-item">
-          <div class="info-icon">
-            <i class="fas fa-envelope"></i>
-          </div>
+          <div class="info-icon"><i class="fas fa-envelope"></i></div>
           <div class="info-content">
             <span class="info-label">Email</span>
             <span class="info-value">{{ user.email }}</span>
           </div>
         </div>
-
         <div class="info-item">
-          <div class="info-icon">
-            <i class="fas fa-map-marker-alt"></i>
-          </div>
+          <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
           <div class="info-content">
-            <span class="info-label">Localização</span>
-            <span class="info-value">{{ user.local || 'Não definido' }}</span>
+            <span class="info-label">Localidade</span>
+            <span class="info-value">{{ user.localidade || user.local || 'Não definido' }}</span>
           </div>
         </div>
-
         <div class="info-item">
-          <div class="info-icon">
-            <i class="fas fa-fingerprint"></i>
-          </div>
+          <div class="info-icon"><i class="fas fa-mobile-alt"></i></div>
           <div class="info-content">
-            <span class="info-label">ID</span>
-            <span class="info-value">{{ user.id }}</span>
+            <span class="info-label">Telemóvel</span>
+            <span class="info-value">{{ user.telemovel || 'Não definido' }}</span>
           </div>
         </div>
       </div>
@@ -76,19 +64,14 @@
         <h3 class="section-title">Estatísticas</h3>
         <div class="stats-grid">
           <div class="stat-card active">
-            <div class="stat-icon">
-              <i class="fas fa-play"></i>
-            </div>
+            <div class="stat-icon"><i class="fas fa-play"></i></div>
             <div class="stat-content">
               <span class="stat-number">{{ auditoriasAdecorrer }}</span>
               <span class="stat-label">A Decorrer</span>
             </div>
           </div>
-
           <div class="stat-card completed">
-            <div class="stat-icon">
-              <i class="fas fa-check"></i>
-            </div>
+            <div class="stat-icon"><i class="fas fa-check"></i></div>
             <div class="stat-content">
               <span class="stat-number">{{ auditoriasConcluidas }}</span>
               <span class="stat-label">Concluídas</span>
@@ -128,12 +111,13 @@ export default {
   data() {
     return {
       user: {
-        name: '',
+        nomeCompleto: '',
         avatar: '',
         area: '',
         numero: '',
         email: '',
-        local: '',
+        localidade: '',
+        telemovel: '',
         id: ''
       },
       auditoriasAdecorrer: 0,
@@ -171,30 +155,46 @@ export default {
   },
   mounted() {
     this.loadTheme()
-    this.loadData()
+    this.loadUserAndStats()
   },
   methods: {
     loadTheme() {
       const savedTheme = localStorage.getItem('theme')
-      if (savedTheme) {
-        this.darkMode = savedTheme === 'dark'
-      }
+      if (savedTheme) this.darkMode = savedTheme === 'dark'
     },
-    
     toggleTheme() {
       this.darkMode = !this.darkMode
       localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
     },
+    loadUserAndStats() {
+      // 1. Ler user autenticado
+      const userStorage = JSON.parse(localStorage.getItem('user') || '{}');
+      let user = { ...userStorage };
 
-    loadData() {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user) this.user = user;
-      
-      const auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]');
-      this.auditoriasAdecorrer = auditorias.length;
-      
-      const auditoriasConcluidas = JSON.parse(localStorage.getItem('auditoriasConcluidas') || '[]');
-      this.auditoriasConcluidas = auditoriasConcluidas.length;
+      // 2. Procurar nos auditores para garantir todos os campos (caso seja login Google)
+      const auditores = JSON.parse(localStorage.getItem('auditores') || '[]');
+      const auditor = auditores.find(a => a.email === user.email);
+
+      if (auditor) {
+        // Misturar dados locais + info do auditor
+        user = { ...auditor, ...user, nomeCompleto: auditor.nomeCompleto || user.name || user.nomeCompleto };
+      }
+      this.user = user;
+
+      // 3. Estatísticas: contar auditorias associadas ao utilizador
+      const uid = this.userId; // ID do utilizador logado
+
+      // 1) Contar auditorias “A Decorrer”
+      const arrAdecorrer = JSON.parse(localStorage.getItem('auditoriasADECORRER') || '[]');
+      this.auditoriasAdecorrer = arrAdecorrer.filter(a =>
+        Array.isArray(a.auditores) && a.auditores.includes(uid)
+      ).length;
+
+      // 2) Contar auditorias “Concluídas”
+      const arrConcluidas = JSON.parse(localStorage.getItem('auditoriasConcluidas') || '[]');
+      this.auditoriasConcluidas = arrConcluidas.filter(a =>
+        Array.isArray(a.auditores) && a.auditores.includes(uid)
+      ).length;
     }
   }
 }
@@ -368,9 +368,12 @@ export default {
 }
 
 @keyframes pulse-ring {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -633,6 +636,7 @@ export default {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

@@ -7,9 +7,26 @@
 export default {
   name: 'App',
   mounted() {
-    this.importarDadosModelo()
+   // this.importarDadosModelo()
   },
   methods: {
+
+    atualizarAuditoriasNovas() {
+      const auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      if (!user.id) return
+
+      const minhas = auditorias.filter(a =>
+        Array.isArray(a.auditores) && a.auditores.includes(user.id)
+      )
+
+      const antigasNovas = JSON.parse(localStorage.getItem('auditoriasNovas') || '[]')
+      const idsExistentes = new Set(antigasNovas.map(a => a.id))
+      const todasNovas = [...antigasNovas, ...minhas.filter(a => !idsExistentes.has(a.id))]
+
+      localStorage.setItem('auditoriasNovas', JSON.stringify(todasNovas))
+    },
+
     importarDadosModelo() {
       const auditoriasDecorrer = [
         {

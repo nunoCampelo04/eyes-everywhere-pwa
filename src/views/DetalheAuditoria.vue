@@ -49,7 +49,7 @@
         <div v-show="activeTab === 0">
           <div class="form-group">
             <label class="form-label"><i class="fas fa-heading"></i> Título</label>
-            <input type="text" v-model="auditoria.titulo" class="form-input" @input="marcarAlteracoes" />
+            <input type="text" v-model="auditoria.nome" class="form-input" @input="marcarAlteracoes" />
           </div>
           <div class="form-group">
             <label class="form-label"><i class="fas fa-tag"></i> Tipo</label>
@@ -266,7 +266,7 @@ export default {
 
     carregarAuditoria() {
       const id = this.$route.params.id
-      const auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
+      const auditorias = JSON.parse(localStorage.getItem('auditoriasADECORRER') || '[]')
       const auditoria = auditorias.find(a => a.id == id)
 
       if (auditoria) {
@@ -287,12 +287,12 @@ export default {
     },
 
     guardarAlteracoes() {
-      const auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
+      const auditorias = JSON.parse(localStorage.getItem('auditoriasADECORRER') || '[]')
       const index = auditorias.findIndex(a => a.id == this.auditoria.id)
 
       if (index !== -1) {
         auditorias[index] = { ...this.auditoria }
-        localStorage.setItem('auditorias', JSON.stringify(auditorias))
+        localStorage.setItem('auditoriasADECORRER', JSON.stringify(auditorias))
         this.alteracoesPendentes = false
 
         // Feedback visual
@@ -307,9 +307,9 @@ export default {
     concluirAuditoria() {
       if (confirm('Tem certeza que deseja marcar esta auditoria como concluída?')) {
         // Remover das auditorias ativas
-        let auditorias = JSON.parse(localStorage.getItem('auditorias') || '[]')
+        let auditorias = JSON.parse(localStorage.getItem('auditoriasADECORRER') || '[]')
         auditorias = auditorias.filter(a => a.id != this.auditoria.id)
-        localStorage.setItem('auditorias', JSON.stringify(auditorias))
+        localStorage.setItem('auditoriasADECORRER', JSON.stringify(auditorias))
 
         // Adicionar às concluídas
         const concluidas = JSON.parse(localStorage.getItem('auditoriasConcluidas') || '[]')

@@ -47,7 +47,7 @@
               <span class="date-month">{{ formatarData(aud.data).mes }}</span>
             </div>
             <div class="auditoria-content">
-              <h3 class="auditoria-title">{{ aud.titulo }}</h3>
+              <h3 class="auditoria-title">{{ aud.nome }}</h3>
               <div class="auditoria-details">
                 <p class="auditoria-time">
                   <i class="fas fa-clock"></i>
@@ -89,7 +89,7 @@ export default {
   computed: {
     auditoriasFiltradas() {
       return this.auditorias.filter((a) =>
-        a.titulo.toLowerCase().includes(this.pesquisa.toLowerCase())
+        a.nome.toLowerCase().includes(this.pesquisa.toLowerCase())
       )
     }
   },
