@@ -182,7 +182,7 @@ export default {
       this.user = user;
 
       // 3. Estatísticas: contar auditorias associadas ao utilizador
-      const uid = this.userId; // ID do utilizador logado
+      const uid = this.user.id; // ID do utilizador logado
 
       // 1) Contar auditorias “A Decorrer”
       const arrAdecorrer = JSON.parse(localStorage.getItem('auditoriasADECORRER') || '[]');
